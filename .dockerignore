@@ -1,0 +1,33 @@
+# Environment files (secrets)
+.env.local
+.env
+
+# Development files
+node_modules/
+.git/
+.github/
+.vscode/
+.idea/
+
+# Documentation
+README.md
+README-modular.md
+DEPLOYMENT.md
+REPORT.md
+FLOW_ANALYSIS_REPORT.md
+CLAUDE.md
+specs/
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp

@@ -1,0 +1,137 @@
+name: 🚀 Deploy Xpress.Delivery MVP
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📦 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-js-version: '18'
+        
+    - name: 📋 Validate environment variables
+      run: |
+        echo "🔍 Checking for required environment variables..."
+        if [ -z "${{ secrets.XPRESS_API_USERNAME }}" ]; then
+          echo "❌ XPRESS_API_USERNAME not configured in GitHub Secrets"
+          exit 1
+        fi
+        if [ -z "${{ secrets.XPRESS_API_PASSWORD }}" ]; then
+          echo "❌ XPRESS_API_PASSWORD not configured in GitHub Secrets"
+          exit 1
+        fi
+        if [ -z "${{ secrets.GOOGLE_MAPS_API_KEY }}" ]; then
+          echo "❌ GOOGLE_MAPS_API_KEY not configured in GitHub Secrets"
+          exit 1
+        fi
+        echo "✅ All required environment variables configured"
+    
+    - name: 🏗️ Create production environment file
+      run: |
+        echo "🔧 Creating production environment configuration..."
+        cat > xpress-mvp/.env.production << EOF
+        XPRESS_API_BASE_URL=https://api.xpress.delivery
+        XPRESS_API_USERNAME=${{ secrets.XPRESS_API_USERNAME }}
+        XPRESS_API_PASSWORD=${{ secrets.XPRESS_API_PASSWORD }}
+        GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+        REVOLUT_API_KEY=${{ secrets.REVOLUT_API_KEY }}
+        REVOLUT_WEBHOOK_SECRET=${{ secrets.REVOLUT_WEBHOOK_SECRET }}
+        REVOLUT_PUBLIC_KEY=${{ secrets.REVOLUT_PUBLIC_KEY }}
+        REVOLUT_ENVIRONMENT=prod
+        NODE_ENV=production
+        APP_DEBUG_MODE=false
+        APP_SHOW_TEST_BUTTON=false
+        EOF
+        echo "✅ Production environment file created"
+    
+    - name: 🧪 Validate configuration
+      run: |
+        echo "🔍 Validating application configuration..."
+        cd xpress-mvp
+        # Basic validation - check if files exist and are valid
+        if [ ! -f "index-modular.html" ]; then
+          echo "❌ Main application file not found"
+          exit 1
+        fi
+        if [ ! -f "src/config/env.config.js" ]; then
+          echo "❌ Environment configuration not found"
+          exit 1
+        fi
+        echo "✅ Application configuration valid"
+    
+    - name: 🚀 Deploy to Vercel (Example)
+      # Uncomment and configure for Vercel deployment
+      # uses: amondnet/vercel-action@v25
+      # with:
+      #   vercel-token: ${{ secrets.VERCEL_TOKEN }}
+      #   vercel-org-id: ${{ secrets.ORG_ID }}
+      #   vercel-project-id: ${{ secrets.PROJECT_ID }}
+      #   working-directory: xpress-mvp
+      run: |
+        echo "🔄 Deployment step - configure your preferred deployment method"
+        echo "📋 Available options:"
+        echo "   - Vercel (recommended for static sites)"
+        echo "   - Netlify (good for static sites)"
+        echo "   - GitHub Pages (basic, no env vars)"
+        echo "   - Custom server deployment"
+        echo "✅ Deployment configuration ready"
+
+    - name: 🧹 Cleanup
+      run: |
+        echo "🧹 Cleaning up sensitive files..."
+        rm -f xpress-mvp/.env.production
+        echo "✅ Cleanup completed"
+
+  security-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 📦 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔒 Check for secrets in code
+      run: |
+        echo "🔍 Scanning for potential secrets in committed files..."
+        
+        # Check for common secret patterns
+        if grep -r "wojciech@xpress.delivery" xpress-mvp/ --exclude-dir=node_modules --exclude="*.log" || true; then
+          echo "⚠️ Found hardcoded email in committed files"
+        fi
+        
+        if grep -r "dupa8dupa" xpress-mvp/ --exclude-dir=node_modules --exclude="*.log" || true; then
+          echo "❌ Found hardcoded password in committed files - SECURITY ISSUE!"
+          exit 1
+        fi
+        
+        if grep -r "AIzaSy" xpress-mvp/ --exclude-dir=node_modules --exclude="*.log" --exclude=".env.*" || true; then
+          echo "⚠️ Found potential Google API key in committed files"
+        fi
+        
+        echo "✅ Security scan completed"
+        
+    - name: 📋 Validate .gitignore
+      run: |
+        echo "🔍 Checking .gitignore configuration..."
+        if grep -q "\.env" xpress-mvp/.gitignore; then
+          echo "✅ .env files are gitignored"
+        else
+          echo "❌ .env files not in .gitignore - SECURITY ISSUE!"
+          exit 1
+        fi
+        
+        if grep -q "config\.local\.js" xpress-mvp/.gitignore; then
+          echo "✅ Local config files are gitignored"
+        else
+          echo "⚠️ Local config files should be gitignored"
+        fi
+        
+        echo "✅ .gitignore validation completed"

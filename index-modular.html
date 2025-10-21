@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xpress.Delivery - Zamów przesyłkę</title>
+    
+    <!-- Modular CSS -->
+    <link rel="stylesheet" href="src/styles/base.css">
+    <link rel="stylesheet" href="src/styles/components.css">
+    <link rel="stylesheet" href="src/styles/responsive.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Xpress.<span class="highlight">Delivery</span></h1>
+            <p>Kurierzy w Warszawie - wpisz adresy i zamów</p>
+        </header>
+
+        <!-- Main Form Page -->
+        <div id="main-page" class="page active">
+            <main class="main-content">
+                <!-- Address Input -->
+                <section class="address-section">
+                    <div class="address-inputs">
+                        <div class="address-group">
+                            <label>📍 Skąd odbieramy?</label>
+                            <input type="text" id="pickup-address" placeholder="ul. Krakowska 123, Warszawa" />
+                        </div>
+                        <div class="address-group">
+                            <label>📍 Gdzie dostarczamy?</label>
+                            <input type="text" id="delivery-address" placeholder="ul. Marszałkowska 45, Warszawa" />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results Section (hidden initially) -->
+                <section id="results-section" class="results-section" style="display: none;">
+                    <!-- Quick Route Info -->
+                    <div class="route-summary">
+                        <div class="route-visual">
+                            <span class="point">A</span>
+                            <div class="route-line"></div>
+                            <span class="point">B</span>
+                        </div>
+                        <div class="route-details">
+                            <strong id="distance-display">7.2 km</strong> • <strong id="time-display">25 min</strong>
+                        </div>
+                    </div>
+
+                    <!-- Package Options with Instant Pricing -->
+                    <div class="package-pricing">
+                        <h3>Wybierz wielkość i zamów</h3>
+                        <div class="package-options">
+                            <div class="package-option" data-size="small">
+                                <div class="package-info">
+                                    <div class="package-icon">📄</div>
+                                    <div class="package-details">
+                                        <h4>Mała</h4>
+                                        <p>Do 2kg, dokumenty</p>
+                                    </div>
+                                </div>
+                                <div class="package-price">
+                                    <div class="price" id="price-small">24.50 zł</div>
+                                    <div class="order-btn">Zamawiam</div>
+                                </div>
+                            </div>
+
+                            <div class="package-option" data-size="medium">
+                                <div class="package-info">
+                                    <div class="package-icon">📦</div>
+                                    <div class="package-details">
+                                        <h4>Średnia</h4>
+                                        <p>Do 10kg, paczki</p>
+                                    </div>
+                                </div>
+                                <div class="package-price">
+                                    <div class="price" id="price-medium">32.80 zł</div>
+                                    <div class="order-btn">Zamawiam</div>
+                                </div>
+                            </div>
+
+                            <div class="package-option" data-size="large">
+                                <div class="package-info">
+                                    <div class="package-icon">📋</div>
+                                    <div class="package-details">
+                                        <h4>Duża</h4>
+                                        <p>Do 30kg, większe</p>
+                                    </div>
+                                </div>
+                                <div class="package-price">
+                                    <div class="price" id="price-large">48.20 zł</div>
+                                    <div class="order-btn">Zamawiam</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Order Details Form (hidden initially) -->
+                <section id="order-form-section" class="order-form-section" style="display: none;">
+                    <div class="order-header">
+                        <h3>Finalizuj zamówienie</h3>
+                        <div class="order-summary">
+                            <span id="summary-package">Mała paczka</span> • 
+                            <span id="summary-route">Krakowska → Marszałkowska</span> • 
+                            <strong id="summary-price">24.50 zł</strong>
+                        </div>
+                    </div>
+
+                    <form id="contact-form">
+                        <div class="contact-sections">
+                            <div class="contact-section">
+                                <h4>👤 Dane nadawcy</h4>
+                                <div class="form-row">
+                                    <input type="text" name="senderName" placeholder="Imię i nazwisko" required autocomplete="name" />
+                                    <input type="tel" name="senderPhone" placeholder="+48 123 456 789" required pattern="(\+48\s?)?(\d{3}\s?\d{3}\s?\d{3}|\d{2}\s?\d{3}\s?\d{2}\s?\d{2})" title="Format: +48 XXX XXX XXX lub XXX XXX XXX" autocomplete="tel" />
+                                </div>
+                                <input type="email" name="senderEmail" placeholder="jan@example.com" required autocomplete="email" />
+                            </div>
+
+                            <div class="contact-section">
+                                <h4>👥 Dane odbiorcy</h4>
+                                <div class="form-row">
+                                    <input type="text" name="recipientName" placeholder="Imię i nazwisko" required autocomplete="shipping name" />
+                                    <input type="tel" name="recipientPhone" placeholder="+48 123 456 789" required pattern="(\+48\s?)?(\d{3}\s?\d{3}\s?\d{3}|\d{2}\s?\d{3}\s?\d{2}\s?\d{2})" title="Format: +48 XXX XXX XXX lub XXX XXX XXX" autocomplete="shipping tel" />
+                                </div>
+                                <input type="email" name="recipientEmail" placeholder="jan@example.com" required autocomplete="shipping email" />
+                            </div>
+                        </div>
+
+                        <!-- Payment -->
+                        <div class="payment-section">
+                            <div class="payment-summary">
+                                <span>Do zapłaty: <strong id="final-price">24.50 zł</strong></span>
+                            </div>
+                            <div class="payment-methods">
+                                <span>💳 Karta</span>
+                                <span>📱 BLIK</span>
+                                <span>🏪 Revolut</span>
+                            </div>
+                            <button type="submit" class="btn-pay">
+                                💳 Zapłać i zamów <span id="pay-price">24.50 zł</span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+
+        <!-- Thank You Page -->
+        <div id="thank-you-page" class="page">
+            <div class="thank-you-content">
+                <div class="success-icon">✅</div>
+                <h1>Zamówione!</h1>
+                <p class="success-subtitle">Twoja przesyłka jest już w drodze</p>
+
+                <div class="order-details">
+                    <h3>Szczegóły zamówienia</h3>
+                    <div class="order-number">
+                        <strong id="final-order-number">XPR-2024-001234</strong>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="label">Trasa:</span>
+                        <span id="final-route">Krakowska → Marszałkowska</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Wielkość:</span>
+                        <span id="final-package">Mała paczka</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Koszt:</span>
+                        <strong id="final-cost">24.50 zł</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Czas dostawy:</span>
+                        <span id="final-time">25-35 min</span>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>Co dalej?</h3>
+                    <div class="steps">
+                        <div class="step-item">
+                            <span class="step-time">Za 2 min</span>
+                            <span>📧 Potwierdzenie na email</span>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-time">Za 5-10 min</span>
+                            <span>📱 SMS z danymi kuriera</span>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-time">Za 30-45 min</span>
+                            <span>🚚 Kurier odbierze paczkę</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <p>📞 Potrzebujesz pomocy? <strong>+48 800 123 456</strong></p>
+                </div>
+
+                <button class="btn-new-order btn btn-primary">
+                    🚀 Zamów kolejną przesyłkę
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p id="loading-text">Obliczam cenę...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initialize Google Maps callback first -->
+    <script>
+        // Global callback function must exist before Google Maps loads
+        window.initGoogleMaps = function() {
+            console.log('🗺️ Google Maps API loaded - waiting for app...');
+            // Set flag that Google Maps is ready
+            window.googleMapsReady = true;
+            // Try to initialize if app is already loaded
+            if (window.xpressApp && window.xpressApp.googleMapsService) {
+                console.log('✅ App ready - initializing autocomplete immediately');
+                window.xpressApp.googleMapsService.initializeAutocomplete();
+            }
+        };
+    </script>
+
+    <!-- Load config first (with placeholders) -->
+    <script src="config.local.js"></script>
+
+    <!-- Dynamically inject Google Maps with API key from config -->
+    <script>
+        (function() {
+            const apiKey = window.CONFIG_LOCAL?.googleMaps?.apiKey || '';
+            if (!apiKey || apiKey.startsWith('__')) {
+                console.error('❌ Google Maps API key not configured!');
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps&loading=async`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        })();
+    </script>
+    
+    <!-- Modular JavaScript (ES6 Modules) -->
+    <script type="module" src="src/components/XpressApp.js"></script>
+</body>
+</html>
