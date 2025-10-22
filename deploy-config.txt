@@ -1,0 +1,4 @@
+PORT=8081
+DOMAIN=sendxpress.borg.tools
+CONTAINER_NAME=sendxpress-container
+IMAGE_NAME=sendxpress-app

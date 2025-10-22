@@ -19,45 +19,9 @@ jobs:
       with:
         node-js-version: '18'
         
-    - name: 📋 Validate environment variables
-      run: |
-        echo "🔍 Checking for required environment variables..."
-        if [ -z "${{ secrets.XPRESS_API_USERNAME }}" ]; then
-          echo "❌ XPRESS_API_USERNAME not configured in GitHub Secrets"
-          exit 1
-        fi
-        if [ -z "${{ secrets.XPRESS_API_PASSWORD }}" ]; then
-          echo "❌ XPRESS_API_PASSWORD not configured in GitHub Secrets"
-          exit 1
-        fi
-        if [ -z "${{ secrets.GOOGLE_MAPS_API_KEY }}" ]; then
-          echo "❌ GOOGLE_MAPS_API_KEY not configured in GitHub Secrets"
-          exit 1
-        fi
-        echo "✅ All required environment variables configured"
-    
-    - name: 🏗️ Create production environment file
-      run: |
-        echo "🔧 Creating production environment configuration..."
-        cat > xpress-mvp/.env.production << EOF
-        XPRESS_API_BASE_URL=https://api.xpress.delivery
-        XPRESS_API_USERNAME=${{ secrets.XPRESS_API_USERNAME }}
-        XPRESS_API_PASSWORD=${{ secrets.XPRESS_API_PASSWORD }}
-        GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
-        REVOLUT_API_KEY=${{ secrets.REVOLUT_API_KEY }}
-        REVOLUT_WEBHOOK_SECRET=${{ secrets.REVOLUT_WEBHOOK_SECRET }}
-        REVOLUT_PUBLIC_KEY=${{ secrets.REVOLUT_PUBLIC_KEY }}
-        REVOLUT_ENVIRONMENT=prod
-        NODE_ENV=production
-        APP_DEBUG_MODE=false
-        APP_SHOW_TEST_BUTTON=false
-        EOF
-        echo "✅ Production environment file created"
-    
-    - name: 🧪 Validate configuration
+    - name: 📋 Validate configuration
       run: |
         echo "🔍 Validating application configuration..."
-        cd xpress-mvp
         # Basic validation - check if files exist and are valid
         if [ ! -f "index-modular.html" ]; then
           echo "❌ Main application file not found"
@@ -68,29 +32,35 @@ jobs:
           exit 1
         fi
         echo "✅ Application configuration valid"
-    
-    - name: 🚀 Deploy to Vercel (Example)
-      # Uncomment and configure for Vercel deployment
-      # uses: amondnet/vercel-action@v25
-      # with:
-      #   vercel-token: ${{ secrets.VERCEL_TOKEN }}
-      #   vercel-org-id: ${{ secrets.ORG_ID }}
-      #   vercel-project-id: ${{ secrets.PROJECT_ID }}
-      #   working-directory: xpress-mvp
-      run: |
-        echo "🔄 Deployment step - configure your preferred deployment method"
-        echo "📋 Available options:"
-        echo "   - Vercel (recommended for static sites)"
-        echo "   - Netlify (good for static sites)"
-        echo "   - GitHub Pages (basic, no env vars)"
-        echo "   - Custom server deployment"
-        echo "✅ Deployment configuration ready"
 
-    - name: 🧹 Cleanup
+    - name: 🔑 Setup SSH key for deployment
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        echo "🧹 Cleaning up sensitive files..."
-        rm -f xpress-mvp/.env.production
-        echo "✅ Cleanup completed"
+        echo "🔐 Setting up SSH key for borg.tools..."
+        mkdir -p ~/.ssh
+        echo "${{ secrets.BORG_TOOLS_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H borg.tools >> ~/.ssh/known_hosts
+        echo "✅ SSH key configured"
+
+    - name: 🚀 Deploy to borg.tools
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        echo "🚀 Deploying to production server (sendxpress.borg.tools)..."
+        ssh vizi@borg.tools './deploy.sh sendxpress main'
+        echo "✅ Deployment completed"
+
+    - name: 🧪 Test deployment
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        echo "🧪 Testing production deployment..."
+        sleep 5
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://sendxpress.borg.tools)
+        if [ "$HTTP_CODE" = "200" ]; then
+          echo "✅ Production site is responding (HTTP $HTTP_CODE)"
+        else
+          echo "⚠️ Production site returned HTTP $HTTP_CODE"
+        fi
 
   security-check:
     runs-on: ubuntu-latest

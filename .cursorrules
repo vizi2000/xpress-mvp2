@@ -1,0 +1,162 @@
+# Cursor AI Rules for Xpress.Delivery MVP
+
+## Project Overview
+Xpress.Delivery MVP - Courier service application for Warsaw. Vanilla JavaScript with modular ES6 architecture.
+
+## Deployment Instructions
+
+### CRITICAL: How to Deploy to Production
+
+**Server**: `vizi@borg.tools` (passwordless SSH configured)
+**Domain**: https://sendxpress.borg.tools
+**Deployment Method**: Universal deploy script
+
+#### Deploy Command (from local machine):
+```bash
+ssh vizi@borg.tools './deploy.sh sendxpress'
+```
+
+#### Deploy Specific Branch:
+```bash
+ssh vizi@borg.tools './deploy.sh sendxpress main'
+ssh vizi@borg.tools './deploy.sh sendxpress feature/new-feature'
+```
+
+#### What the deploy script does:
+1. Pulls latest code from GitHub (specified branch)
+2. Builds Docker image
+3. Stops old container
+4. Starts new container on port 8081
+5. Reloads nginx proxy
+6. Tests if deployment succeeded
+
+#### Manual Deployment Steps (if script fails):
+```bash
+ssh vizi@borg.tools
+cd ~/apps/sendxpress
+git pull origin main
+docker build -t sendxpress-app .
+docker stop sendxpress-container
+docker rm sendxpress-container
+docker run -d --name sendxpress-container --env-file .env.local -p 8081:80 sendxpress-app
+docker exec nginx-proxy nginx -s reload
+```
+
+#### Check Deployment Status:
+```bash
+ssh vizi@borg.tools 'docker ps | grep sendxpress'
+ssh vizi@borg.tools 'docker logs -f sendxpress-container'
+ssh vizi@borg.tools 'curl -I https://sendxpress.borg.tools'
+```
+
+#### Rollback (if deployment fails):
+```bash
+ssh vizi@borg.tools 'cd ~/apps/sendxpress && git reset --hard HEAD~1 && ./deploy.sh sendxpress'
+```
+
+---
+
+## Development Workflow
+
+### Local Development
+```bash
+# Start local server
+python3 -m http.server 8080
+
+# Open in browser
+open http://localhost:8080/index-modular.html
+```
+
+### Git Workflow
+```bash
+# Create feature branch
+git checkout -b feature/feature-name
+
+# Make changes, commit
+git add .
+git commit -m "feat: description"
+
+# Push to GitHub
+git push origin feature/feature-name
+
+# Deploy to production (from main branch)
+git checkout main
+git merge feature/feature-name
+git push origin main
+ssh vizi@borg.tools './deploy.sh sendxpress main'
+```
+
+### GitHub Actions Auto-Deploy
+- Push to `main` branch → Automatic deployment to production
+- Push to other branches → No automatic deployment (manual deploy with branch name)
+
+---
+
+## Architecture Notes
+
+**Main Files**:
+- `index-modular.html` - Main entry point (modular version)
+- `src/services/` - API integrations (Xpress, Google Maps)
+- `src/components/` - UI components
+- `src/config/` - Configuration files
+
+**Environment Variables** (on server):
+- `XPRESS_API_USERNAME` - Xpress.Delivery API username
+- `XPRESS_API_PASSWORD` - Xpress.Delivery API password
+- `GOOGLE_MAPS_API_KEY` - Google Maps API key
+
+**Docker Setup**:
+- Base image: `nginx:alpine`
+- Port: 8081 (internal), 80/443 (external via nginx-proxy)
+- Config injection via `inject-env.sh` script
+
+---
+
+## Common Tasks
+
+### Deploy after making changes:
+```bash
+git add .
+git commit -m "feat: your changes"
+git push origin main
+ssh vizi@borg.tools './deploy.sh sendxpress'
+```
+
+### View production logs:
+```bash
+ssh vizi@borg.tools 'docker logs -f sendxpress-container'
+```
+
+### Test production site:
+```bash
+curl -I https://sendxpress.borg.tools
+```
+
+### Emergency: Restart container:
+```bash
+ssh vizi@borg.tools 'docker restart sendxpress-container'
+```
+
+---
+
+## AI Agent Instructions
+
+When asked to deploy or push to production:
+1. Verify all changes are committed and pushed to GitHub
+2. Run: `ssh vizi@borg.tools './deploy.sh sendxpress main'`
+3. Check deployment logs for errors
+4. Test the production URL: https://sendxpress.borg.tools
+5. Report deployment status to user
+
+When creating new features:
+1. Create feature branch
+2. Implement changes
+3. Test locally
+4. Commit and push to GitHub
+5. Ask user if they want to deploy to production
+
+NEVER deploy directly without user confirmation unless explicitly asked.
+
+---
+
+Created by The Collective Borg.tools

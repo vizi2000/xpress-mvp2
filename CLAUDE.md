@@ -133,17 +133,80 @@ The application provides test data via `AddressForm.fillTestData()`:
 
 ## Deployment
 
+### Production Server
+- **Server**: `vizi@borg.tools` (passwordless SSH configured)
+- **Domain**: https://sendxpress.borg.tools
+- **Port**: 8081 (internal), 80/443 (external via nginx-proxy)
+- **Container**: `sendxpress-container`
+- **Method**: Docker + Universal deploy script
+
+### Quick Deploy (from local machine)
+```bash
+# Deploy main branch to production
+ssh vizi@borg.tools './deploy.sh sendxpress'
+
+# Deploy specific branch
+ssh vizi@borg.tools './deploy.sh sendxpress feature/new-feature'
+```
+
+### Deploy Script Features
+The universal `~/deploy.sh` script on server automatically:
+1. Pulls latest code from GitHub (specified branch)
+2. Builds Docker image (`sendxpress-app`)
+3. Stops old container (`sendxpress-container`)
+4. Starts new container on port 8081
+5. Reloads nginx-proxy for SSL/domain routing
+6. Tests deployment and shows status
+
+### Manual Deployment (if script fails)
+```bash
+ssh vizi@borg.tools
+cd ~/apps/sendxpress
+git pull origin main
+docker build -t sendxpress-app .
+docker stop sendxpress-container && docker rm sendxpress-container
+docker run -d --name sendxpress-container --env-file .env.local -p 8081:80 sendxpress-app
+docker exec nginx-proxy nginx -s reload
+```
+
+### Deployment Status & Logs
+```bash
+# Check if container is running
+ssh vizi@borg.tools 'docker ps | grep sendxpress'
+
+# View live logs
+ssh vizi@borg.tools 'docker logs -f sendxpress-container'
+
+# Test production URL
+curl -I https://sendxpress.borg.tools
+
+# Restart container (if needed)
+ssh vizi@borg.tools 'docker restart sendxpress-container'
+```
+
+### Rollback (if deployment fails)
+```bash
+ssh vizi@borg.tools 'cd ~/apps/sendxpress && git reset --hard HEAD~1 && ~/deploy.sh sendxpress'
+```
+
 ### CI/CD Pipeline
 GitHub Actions workflow ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)):
+- **Auto-deploy on push to `main` branch** → Production (sendxpress.borg.tools)
+- Push to other branches → Manual deploy with branch name
 - Validates environment variables
 - Security scanning for hardcoded secrets
 - Creates production environment configuration
-- Supports Vercel/Netlify/custom deployment
 
-### Deployment Platforms
-- **Vercel** (recommended): Automatic deployments with environment variables
-- **Netlify**: Similar to Vercel
-- **GitHub Pages**: NOT recommended (no secure environment variable support)
+### Deployment Configuration
+Each project has a `deploy-config.txt` file (on server):
+```
+PORT=8081
+DOMAIN=sendxpress.borg.tools
+CONTAINER_NAME=sendxpress-container
+IMAGE_NAME=sendxpress-app
+```
+
+This ensures no port conflicts between multiple projects on the same server.
 
 ## Common Development Patterns
 
