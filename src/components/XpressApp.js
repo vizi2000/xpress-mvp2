@@ -6,9 +6,13 @@ import { XpressDeliveryService } from '../services/XpressDeliveryService.js';
 import { AddressForm } from './AddressForm.js';
 import { PriceCalculator } from './PriceCalculator.js';
 import { OrderStatus } from './OrderStatus.js';
+import { RouteMap } from './RouteMap.js';
 import { UIHelpers } from '../utils/UIHelpers.js';
 import { Validators } from '../utils/Validators.js';
 import { AppConfig } from '../config/app.config.js';
+import { ArrowBackground } from './ArrowBackground.js';
+import { ChatAgent } from '../ai/ChatAgent.js';
+import { ChatUI } from '../ai/ChatUI.js';
 
 export class XpressApp {
     constructor() {
@@ -25,6 +29,10 @@ export class XpressApp {
         this.addressForm = null;
         this.priceCalculator = null;
         this.orderStatus = null;
+        this.routeMap = null;
+        this.arrowBackground = null;
+        this.chatAgent = null;
+        this.chatUI = null;
         
         // Application state
         this.orderData = {
@@ -58,22 +66,43 @@ export class XpressApp {
 
     // Initialize components
     initializeComponents() {
+        // Initialize arrow background animation
+        this.arrowBackground = new ArrowBackground('arrow-background');
+
         // Initialize address form
         this.addressForm = new AddressForm(
-            this.googleMapsService, 
+            this.googleMapsService,
             (pickup, delivery) => this.handleAddressChange(pickup, delivery)
         );
-        
+
         // Initialize price calculator
         this.priceCalculator = new PriceCalculator(
-            this.googleMapsService, 
+            this.googleMapsService,
             this.pricingService,
             this.config
         );
-        
+
         // Initialize order status component
         this.orderStatus = new OrderStatus(this.xpressDeliveryService);
-        
+
+        // Initialize route map component
+        this.routeMap = new RouteMap('route-map');
+        this.routeMap.initialize();
+
+        // Initialize AI Chat if API key is available
+        const apiKey = window.CONFIG_LOCAL?.openrouter?.apiKey;
+        if (apiKey && !apiKey.startsWith('__')) {
+            try {
+                this.chatAgent = new ChatAgent(apiKey);
+                this.chatUI = new ChatUI(this.chatAgent);
+                console.log('✅ AI Chat initialized');
+            } catch (error) {
+                console.warn('⚠️ AI Chat initialization failed:', error.message);
+            }
+        } else {
+            console.log('ℹ️ AI Chat disabled - no API key configured');
+        }
+
         // Check if Google Maps is already loaded
         this.checkGoogleMapsReady();
     }
@@ -128,6 +157,15 @@ export class XpressApp {
             // Save coordinates for order creation
             this.orderData.pickupCoords = lastCalculation.pickupCoords;
             this.orderData.deliveryCoords = lastCalculation.deliveryCoords;
+
+            // Draw route on map if coordinates are available
+            if (this.orderData.pickupCoords && this.orderData.deliveryCoords) {
+                await this.routeMap.drawRoute(
+                    this.orderData.pickupCoords,
+                    this.orderData.deliveryCoords
+                );
+                this.routeMap.show();
+            }
         }
     }
 
@@ -292,7 +330,7 @@ export class XpressApp {
     startNewOrder() {
         // Stop tracking previous order
         this.orderStatus.stopTracking();
-        
+
         // Reset order data
         this.orderData = {
             pickup: '',
@@ -307,24 +345,30 @@ export class XpressApp {
             pickupCoords: null,
             deliveryCoords: null
         };
-        
+
         // Reset UI
         this.addressForm.clearAddresses();
         UIHelpers.clearForm('contact-form');
-        
+
         // Remove package selections
         document.querySelectorAll('.package-option').forEach(option => {
             option.classList.remove('selected');
         });
-        
+
         // Hide sections
         UIHelpers.toggleElement('results-section', false);
         UIHelpers.toggleElement('order-form-section', false);
-        
+
+        // Hide and clear route map
+        if (this.routeMap) {
+            this.routeMap.hide();
+            this.routeMap.clearRoute();
+        }
+
         // Show main page
         UIHelpers.toggleClass('thank-you-page', 'active', false);
         UIHelpers.toggleClass('main-page', 'active', true);
-        
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -367,6 +411,14 @@ export class XpressApp {
     // Fill test data
     fillTestData() {
         this.addressForm.fillTestData();
+    }
+
+    // Scroll to payment section (called from chat widget)
+    scrollToPayment() {
+        const paymentSection = document.getElementById('order-form-section');
+        if (paymentSection) {
+            UIHelpers.scrollToElement('order-form-section');
+        }
     }
 }
 

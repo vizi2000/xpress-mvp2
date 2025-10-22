@@ -100,18 +100,20 @@ export class GoogleMapsService {
             suggestionsList = document.createElement('div');
             suggestionsList.className = 'locationiq-suggestions';
             suggestionsList.style.cssText = `
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: white;
-                border: 1px solid #ccc;
-                border-top: none;
-                max-height: 200px;
-                overflow-y: auto;
-                z-index: 1000;
-                display: none;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                position: absolute !important;
+                z-index: 999999 !important;
+                background: #ffffff !important;
+                border: 2px solid #F4C810 !important;
+                border-radius: 12px !important;
+                display: none !important;
+                visibility: visible !important;
+                max-height: 300px !important;
+                overflow-y: auto !important;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+                top: calc(100% + 8px) !important;
+                left: 0 !important;
+                right: 0 !important;
+                margin-top: 0 !important;
             `;
 
             // Make parent container position relative
@@ -146,19 +148,24 @@ export class GoogleMapsService {
                             const item = document.createElement('div');
                             item.className = 'suggestion-item';
                             item.style.cssText = `
-                                padding: 10px;
-                                cursor: pointer;
-                                border-bottom: 1px solid #eee;
+                                padding: 12px 16px !important;
+                                cursor: pointer !important;
+                                border-bottom: 1px solid rgba(244, 200, 16, 0.2) !important;
+                                color: #000 !important;
+                                font-size: 0.95rem !important;
+                                transition: all 0.2s ease !important;
                             `;
                             // Use 'description' field from LocationIQService
                             item.textContent = suggestion.description || suggestion.display_name || '';
 
                             item.addEventListener('mouseenter', () => {
-                                item.style.backgroundColor = '#f0f0f0';
+                                item.style.backgroundColor = 'rgba(244, 200, 16, 0.1)';
+                                item.style.paddingLeft = '20px';
                             });
 
                             item.addEventListener('mouseleave', () => {
                                 item.style.backgroundColor = 'white';
+                                item.style.paddingLeft = '16px';
                             });
 
                             item.addEventListener('click', () => {

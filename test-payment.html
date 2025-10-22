@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment Gateways - Xpress.Delivery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .test-section {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .test-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .order-info {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .value {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .payment-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .payment-btn {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .payment-btn.revolut {
+            background: linear-gradient(135deg, #7b2cbf 0%, #9d4edd 100%);
+            box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+        }
+
+        .payment-btn.revolut:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(123, 44, 191, 0.4);
+        }
+
+        .payment-btn.payu {
+            background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+        }
+
+        .payment-btn.payu:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(46, 204, 113, 0.4);
+        }
+
+        .payment-amount {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .console-log {
+            background: #1e1e1e;
+            color: #00ff00;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .console-log p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Payment Gateways</h1>
+        <p class="subtitle">Xpress.Delivery Mock Payment Integration</p>
+        <span class="badge">🎭 TEST MODE</span>
+
+        <div class="test-section">
+            <h2>Order Information</h2>
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="label">Order ID:</span>
+                    <span class="value" id="order-id">TEST-2025-001</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Pickup:</span>
+                    <span class="value">ul. Krakowska 123, Warszawa</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Delivery:</span>
+                    <span class="value">ul. Marszałkowska 45, Warszawa</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Package Size:</span>
+                    <span class="value">Medium</span>
+                </div>
+            </div>
+
+            <h2>Select Payment Method</h2>
+            <div class="payment-buttons">
+                <button class="payment-btn revolut" onclick="testRevolutPayment()">
+                    <span>💳 Revolut</span>
+                    <span class="payment-amount">35.00 PLN</span>
+                </button>
+                <button class="payment-btn payu" onclick="testPayUPayment()">
+                    <span>💰 PayU</span>
+                    <span class="payment-amount">35.00 PLN</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ How to test:</strong>
+            1. Click one of the payment buttons above<br>
+            2. A new window will open with the mock payment page<br>
+            3. Click "Confirm Payment" to simulate payment<br>
+            4. Check browser console for logs<br>
+            5. Allow popups if blocked
+        </div>
+
+        <div class="console-log" id="console">
+            <p>💻 Console output will appear here...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { RevolutPayment } from './src/payment/RevolutPayment.js';
+        import { PayUPayment } from './src/payment/PayUPayment.js';
+
+        const mockOrderData = {
+            orderId: 'TEST-2025-001',
+            tracking_code: 'TEST-2025-001',
+            pickupAddress: 'ul. Krakowska 123, Warszawa',
+            deliveryAddress: 'ul. Marszałkowska 45, Warszawa',
+            packageSize: 'medium'
+        };
+
+        const amount = 35.00;
+
+        function log(message, type = 'info') {
+            const consoleDiv = document.getElementById('console');
+            const p = document.createElement('p');
+            const timestamp = new Date().toLocaleTimeString();
+
+            if (type === 'success') {
+                p.style.color = '#00ff00';
+                p.textContent = `[${timestamp}] ✅ ${message}`;
+            } else if (type === 'error') {
+                p.style.color = '#ff4444';
+                p.textContent = `[${timestamp}] ❌ ${message}`;
+            } else {
+                p.style.color = '#00ccff';
+                p.textContent = `[${timestamp}] ℹ️ ${message}`;
+            }
+
+            consoleDiv.appendChild(p);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        window.testRevolutPayment = async function() {
+            log('Initializing Revolut payment...');
+            try {
+                const revolut = new RevolutPayment();
+                const result = await revolut.createPayment(mockOrderData, amount);
+
+                if (result.success) {
+                    log('Revolut payment window opened successfully', 'success');
+                    log(`Order ID: ${result.orderId}, Amount: ${result.amount} ${result.currency}`);
+                } else {
+                    log('Failed to open Revolut payment window: ' + result.error, 'error');
+                }
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        };
+
+        window.testPayUPayment = async function() {
+            log('Initializing PayU payment...');
+            try {
+                const payu = new PayUPayment();
+                const result = await payu.createPayment(mockOrderData, amount);
+
+                if (result.success) {
+                    log('PayU payment window opened successfully', 'success');
+                    log(`Order ID: ${result.orderId}, Amount: ${result.amount} ${result.currency}`);
+                } else {
+                    log('Failed to open PayU payment window: ' + result.error, 'error');
+                }
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        };
+
+        // Log initialization
+        log('Payment test page loaded');
+        log('Mock order data ready');
+    </script>
+</body>
+</html>

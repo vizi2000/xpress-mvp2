@@ -29,6 +29,11 @@ window.CONFIG_LOCAL = {
         }
     },
 
+    // OpenRouter API configuration (AI Chat)
+    openrouter: {
+        apiKey: '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'
+    },
+
     // Development settings
     development: {
         useMockData: false,
