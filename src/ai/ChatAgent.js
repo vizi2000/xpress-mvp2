@@ -245,8 +245,12 @@ export class ChatAgent {
     extractAddress(text) {
         // Polish address patterns
         const patterns = [
+            // With ul./ulica prefix: "ul. Marszałkowska 1, Warszawa"
             /(?:ul\.|ulica|aleja|al\.|plac|pl\.|os\.|osiedle)\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?(?:,?\s+\d{2}-\d{3})?\s*(?:,?\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)?/gi,
-            /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?(?:,?\s+\d{2}-\d{3})?\s*(?:,?\s+Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź)/gi
+            // Without prefix, with comma before city: "Kolumba 7, Wrocław"
+            /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?\s*,\s*(?:Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź|Katowice|Lublin|Bydgoszcz|Szczecin)/gi,
+            // Without prefix, without comma: "Kolumba 7 Wrocław"
+            /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?(?:\s+\d{2}-\d{3})?\s+(?:Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź|Katowice|Lublin|Bydgoszcz|Szczecin)/gi
         ];
 
         for (const pattern of patterns) {
