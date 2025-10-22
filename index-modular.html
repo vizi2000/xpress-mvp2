@@ -19,18 +19,12 @@
 </head>
 <body>
     <!-- Animated Arrow Background -->
-    <canvas id="arrow-background" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; opacity: 0.25;"></canvas>
+    <canvas id="arrow-background" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; opacity: 0.15; pointer-events: none;"></canvas>
 
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <div class="logo-container">
-                <svg class="logo-icon" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M24 4L44 14V34L24 44L4 34V14L24 4Z" stroke="#F4C810" stroke-width="2" fill="none"/>
-                    <path d="M24 16L24 32M24 16L18 22M24 16L30 22" stroke="#F4C810" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <h1>Xpress.<span class="highlight">Delivery</span></h1>
-            </div>
+            <h1 class="logo">xpress <span class="arrow-logo">→</span>delivery</h1>
             <p>Wyślij swoją przesyłkę ekspresową w 3 prostych krokach!</p>
         </header>
 

@@ -12,22 +12,25 @@
     text-align: center;
 }
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
+.logo {
+    font-family: 'Roboto Mono', monospace;
+    font-style: italic;
+    font-weight: 700;
+    text-transform: lowercase;
+    letter-spacing: -0.02em;
 }
 
-.logo-icon {
-    filter: drop-shadow(0 0 10px rgba(244, 200, 16, 0.5));
+.arrow-logo {
+    color: #F4C810;
+    font-size: 1.2em;
+    font-style: normal;
+    display: inline-block;
     animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    50% { transform: scale(1.1); }
 }
 
 .header::before {
