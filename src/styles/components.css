@@ -20,6 +20,14 @@
     letter-spacing: -0.02em;
 }
 
+.logo-image {
+    max-width: 300px;
+    height: auto;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
 .arrow-logo {
     color: #F4C810;
     font-size: 1.2em;
