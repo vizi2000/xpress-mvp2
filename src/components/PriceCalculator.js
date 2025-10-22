@@ -16,21 +16,26 @@ export class PriceCalculator {
 
     // Calculate prices for given addresses
     async calculatePrice(pickupAddress, deliveryAddress) {
+        console.log('💰 CALC PRICE:', { pickupAddress, deliveryAddress });
+
         try {
             UIHelpers.showLoading('Obliczam cenę...');
 
             // Try real API first, fallback to estimated pricing if Google Maps fails
             try {
+                console.log('💰 Attempting real price calculation...');
                 const result = await this.calculateRealPrice(pickupAddress, deliveryAddress);
+                console.log('💰 Real price calculation result:', result);
                 this.showResults(result);
             } catch (apiError) {
-                console.warn('Real API failed, using estimated pricing:', apiError.message);
+                console.warn('⚠️ Real API failed, using estimated pricing:', apiError.message);
                 const result = await this.calculateEstimatedPrice(pickupAddress, deliveryAddress);
+                console.log('💰 Estimated price calculation result:', result);
                 this.showResults(result);
             }
 
         } catch (error) {
-            console.error('Price calculation error:', error);
+            console.error('❌ Price calculation error:', error);
             UIHelpers.hideLoading();
             this.handleCalculationError(error);
         }

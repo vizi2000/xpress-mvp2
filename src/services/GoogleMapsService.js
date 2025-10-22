@@ -285,11 +285,14 @@ export class GoogleMapsService {
 
     // Calculate distance between two addresses using LocationIQ (primary) or Google Maps (fallback)
     async calculateDistance(pickupAddress, deliveryAddress) {
+        console.log('📍 CALC DISTANCE:', { pickupAddress, deliveryAddress });
+
         // Try LocationIQ first if available
         if (this.locationIQ) {
             try {
                 console.log('🗺️ Using LocationIQ for distance calculation');
                 const result = await this.locationIQ.calculateDistance(pickupAddress, deliveryAddress);
+                console.log('📍 LocationIQ result:', result);
                 return {
                     distance: result.distance, // km
                     duration: result.duration, // minutes
@@ -305,7 +308,10 @@ export class GoogleMapsService {
         console.log('🗺️ Using Google Maps for distance calculation');
         const pickupCoords = await this.geocodeAddress(pickupAddress);
         const deliveryCoords = await this.geocodeAddress(deliveryAddress);
+        console.log('📍 Geocoded coords:', { pickupCoords, deliveryCoords });
+
         const routeData = await this.calculateRoute(pickupCoords, deliveryCoords);
+        console.log('📍 Route data:', routeData);
 
         return {
             distance: routeData.distance / 1000, // Convert to km

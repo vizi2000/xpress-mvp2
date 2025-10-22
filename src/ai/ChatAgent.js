@@ -169,17 +169,26 @@ export class ChatAgent {
             // Save history
             this.saveHistory();
 
+            const orderState = {
+                pickup: this.orderData.pickupAddress,
+                delivery: this.orderData.deliveryAddress,
+                packageSize: this.orderData.packageSize,
+                contactName: this.orderData.contactName,
+                contactEmail: this.orderData.contactEmail,
+                contactPhone: this.orderData.contactPhone
+            };
+
+            console.log('📤 CHAT AGENT RETURN:', {
+                pickup: orderState.pickup,
+                delivery: orderState.delivery,
+                packageSize: orderState.packageSize,
+                readyForPayment: this.isOrderComplete()
+            });
+
             return {
                 success: true,
                 message: aiResponse,
-                orderState: {
-                    pickup: this.orderData.pickupAddress,
-                    delivery: this.orderData.deliveryAddress,
-                    packageSize: this.orderData.packageSize,
-                    contactName: this.orderData.contactName,
-                    contactEmail: this.orderData.contactEmail,
-                    contactPhone: this.orderData.contactPhone
-                },
+                orderState: orderState,
                 readyForPayment: this.isOrderComplete()
             };
         } catch (error) {
@@ -243,6 +252,8 @@ export class ChatAgent {
      * @returns {string|null} Extracted address
      */
     extractAddress(text) {
+        console.log('🔍 EXTRACT: Trying to extract address from:', text);
+
         // Polish address patterns
         const patterns = [
             // With ul./ulica prefix: "ul. Marszałkowska 1, Warszawa"
@@ -256,10 +267,13 @@ export class ChatAgent {
         for (const pattern of patterns) {
             const match = text.match(pattern);
             if (match) {
-                return match[0].trim();
+                const result = match[0].trim();
+                console.log('🔍 EXTRACT: Found address:', result);
+                return result;
             }
         }
 
+        console.log('🔍 EXTRACT: No address found');
         return null;
     }
 

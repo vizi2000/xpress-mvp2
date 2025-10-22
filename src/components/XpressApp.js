@@ -144,6 +144,8 @@ export class XpressApp {
 
     // Handle address change
     async handleAddressChange(pickup, delivery) {
+        console.log('🧮 HANDLE ADDRESS CHANGE:', { pickup, delivery });
+
         this.orderData.pickup = pickup;
         this.orderData.delivery = delivery;
 
@@ -151,6 +153,8 @@ export class XpressApp {
 
         // Update order data with calculation results
         const lastCalculation = this.priceCalculator.getLastCalculation();
+        console.log('🧮 Last calculation result:', lastCalculation);
+
         if (lastCalculation) {
             this.orderData.distance = lastCalculation.distance;
             this.orderData.timeEstimate = lastCalculation.timeEstimate;
@@ -160,14 +164,24 @@ export class XpressApp {
             this.orderData.pickupCoords = lastCalculation.pickupCoords;
             this.orderData.deliveryCoords = lastCalculation.deliveryCoords;
 
+            console.log('🧮 Coordinates saved:', {
+                pickup: this.orderData.pickupCoords,
+                delivery: this.orderData.deliveryCoords
+            });
+
             // Draw route on map if coordinates are available
             if (this.orderData.pickupCoords && this.orderData.deliveryCoords) {
+                console.log('🧮 Drawing route on map...');
                 await this.routeMap.drawRoute(
                     this.orderData.pickupCoords,
                     this.orderData.deliveryCoords
                 );
                 this.routeMap.show();
+            } else {
+                console.warn('⚠️ Cannot draw route - missing coordinates');
             }
+        } else {
+            console.warn('⚠️ No calculation result available');
         }
     }
 
@@ -433,13 +447,17 @@ export class XpressApp {
      * @param {string} delivery - Delivery address
      */
     fillAddressesFromChat(pickup, delivery) {
-        console.log('📋 Chat filling addresses:', { pickup, delivery });
+        console.log('🎯 FILL ADDRESSES CALLED:', { pickup, delivery });
 
         const pickupInput = document.getElementById('pickup-address');
         const deliveryInput = document.getElementById('delivery-address');
 
+        console.log('🎯 Pickup input exists?', !!pickupInput);
+        console.log('🎯 Delivery input exists?', !!deliveryInput);
+
         if (pickupInput && pickup) {
             pickupInput.value = pickup;
+            console.log('🎯 Pickup input value set to:', pickupInput.value);
             // Add visual feedback
             pickupInput.style.borderColor = '#10b981';
             pickupInput.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
@@ -451,6 +469,7 @@ export class XpressApp {
 
         if (deliveryInput && delivery) {
             deliveryInput.value = delivery;
+            console.log('🎯 Delivery input value set to:', deliveryInput.value);
             // Add visual feedback
             deliveryInput.style.borderColor = '#10b981';
             deliveryInput.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
@@ -462,12 +481,15 @@ export class XpressApp {
 
         // Trigger address change to calculate route
         if (pickup && delivery) {
+            console.log('🎯 Triggering handleAddressChange...');
             this.handleAddressChange(pickup, delivery);
 
             // Scroll to results after a brief delay
             setTimeout(() => {
                 this.scrollToResults();
             }, 500);
+        } else {
+            console.warn('⚠️ Cannot trigger handleAddressChange - missing pickup or delivery');
         }
     }
 

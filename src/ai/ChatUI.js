@@ -402,6 +402,11 @@ export class ChatUI {
      * Fill form from order state and trigger actions
      */
     fillFormFromOrderState(orderState) {
+        console.log('📥 CHAT UI RECEIVED orderState:', orderState);
+        console.log('📥 Has pickup?', !!orderState.pickup);
+        console.log('📥 Has delivery?', !!orderState.delivery);
+        console.log('📥 window.xpressApp exists?', !!window.xpressApp);
+
         if (!window.xpressApp) {
             console.warn('⚠️ XpressApp not available for chat integration');
             return;
@@ -410,10 +415,13 @@ export class ChatUI {
         // Fill addresses and trigger calculation with visual feedback
         if (orderState.pickup && orderState.delivery) {
             console.log('📋 Chat → Form: Filling addresses with animation');
+            console.log('📋 Pickup address:', orderState.pickup);
+            console.log('📋 Delivery address:', orderState.delivery);
             window.xpressApp.fillAddressesFromChat(orderState.pickup, orderState.delivery);
         } else if (orderState.pickup) {
             // Only pickup filled
             const pickupInput = document.getElementById('pickup-address');
+            console.log('📋 Pickup input exists?', !!pickupInput);
             if (pickupInput && !pickupInput.value) {
                 pickupInput.value = orderState.pickup;
                 console.log('📋 Chat → Form: Pickup address filled');
@@ -421,6 +429,7 @@ export class ChatUI {
         } else if (orderState.delivery) {
             // Only delivery filled
             const deliveryInput = document.getElementById('delivery-address');
+            console.log('📋 Delivery input exists?', !!deliveryInput);
             if (deliveryInput && !deliveryInput.value) {
                 deliveryInput.value = orderState.delivery;
                 console.log('📋 Chat → Form: Delivery address filled');

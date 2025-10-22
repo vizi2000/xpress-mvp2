@@ -119,18 +119,23 @@ export class LocationIQService {
      * @returns {Promise<{distance: number, duration: number, pickupCoords: object, deliveryCoords: object}>}
      */
     async calculateDistance(pickupAddress, deliveryAddress) {
+        console.log('📍 LocationIQ calculateDistance called:', { pickupAddress, deliveryAddress });
+
         try {
             // First, geocode both addresses
             console.log('📍 Geocoding pickup address...');
             const pickupCoords = await this.geocodeAddress(pickupAddress);
+            console.log('📍 Pickup coords:', pickupCoords);
 
             console.log('📍 Geocoding delivery address...');
             const deliveryCoords = await this.geocodeAddress(deliveryAddress);
+            console.log('📍 Delivery coords:', deliveryCoords);
 
             // Use OSRM for route calculation (100% FREE, no key needed!)
             const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${pickupCoords.lng},${pickupCoords.lat};${deliveryCoords.lng},${deliveryCoords.lat}?overview=false&steps=false`;
 
             console.log('🚗 Calculating route with OSRM...');
+            console.log('🚗 OSRM URL:', osrmUrl);
             const response = await fetch(osrmUrl);
 
             if (!response.ok) {
@@ -138,6 +143,7 @@ export class LocationIQService {
             }
 
             const data = await response.json();
+            console.log('🚗 OSRM response:', data);
 
             if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
                 throw new Error('Route calculation failed');
@@ -154,13 +160,15 @@ export class LocationIQService {
 
             console.log('✅ Route calculated:', {
                 distance: `${result.distance.toFixed(2)} km`,
-                duration: `${Math.round(result.duration)} min`
+                duration: `${Math.round(result.duration)} min`,
+                pickupCoords: result.pickupCoords,
+                deliveryCoords: result.deliveryCoords
             });
 
             return result;
 
         } catch (error) {
-            console.error('❌ Distance calculation error:', error);
+            console.error('❌ LocationIQ distance calculation error:', error);
             throw error;
         }
     }
