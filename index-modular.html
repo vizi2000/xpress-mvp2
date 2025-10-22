@@ -253,7 +253,9 @@
         </div>
     </div>
 
-    <!-- Initialize Google Maps callback first -->
+    <!-- Google Maps not needed - using LocationIQ instead -->
+    <!-- Initialize Google Maps callback first (DISABLED - using LocationIQ) -->
+    <!--
     <script>
         // Global callback function must exist before Google Maps loads
         window.initGoogleMaps = function() {
@@ -267,11 +269,13 @@
             }
         };
     </script>
+    -->
 
     <!-- Load config first (with placeholders) -->
     <script src="config.local.js"></script>
 
-    <!-- Dynamically inject Google Maps with API key from config -->
+    <!-- Dynamically inject Google Maps with API key from config (DISABLED - using LocationIQ) -->
+    <!--
     <script>
         (function() {
             const apiKey = window.CONFIG_LOCAL?.googleMaps?.apiKey || '';
@@ -286,6 +290,7 @@
             document.head.appendChild(script);
         })();
     </script>
+    -->
     
     <!-- Modular JavaScript (ES6 Modules) -->
     <script type="module" src="src/components/XpressApp.js"></script>

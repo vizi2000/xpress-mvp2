@@ -1,0 +1,217 @@
+# Gemini AI Configuration for Xpress.Delivery MVP
+
+## Project Overview
+**Xpress.Delivery MVP** - Courier service application for Warsaw
+- **Technology**: Vanilla JavaScript (ES6 modules), Docker, nginx
+- **Production URL**: https://sendxpress.borg.tools
+- **Server**: vizi@borg.tools
+
+## 🚀 Deployment Instructions
+
+### One-Command Deployment
+```bash
+ssh vizi@borg.tools './deploy.sh sendxpress'
+```
+
+This universal script automatically:
+- Pulls latest code from GitHub
+- Builds Docker image
+- Restarts container
+- Reloads nginx proxy
+- Tests deployment
+
+### Deploy Different Branches
+```bash
+# Deploy main branch (default)
+ssh vizi@borg.tools './deploy.sh sendxpress main'
+
+# Deploy feature branch
+ssh vizi@borg.tools './deploy.sh sendxpress feature/my-feature'
+
+# Deploy development branch
+ssh vizi@borg.tools './deploy.sh sendxpress develop'
+```
+
+### Deployment Configuration (deploy-config.txt)
+```
+PORT=8081
+DOMAIN=sendxpress.borg.tools
+CONTAINER_NAME=sendxpress-container
+IMAGE_NAME=sendxpress-app
+```
+
+### Manual Deployment (Emergency)
+```bash
+ssh vizi@borg.tools
+cd ~/apps/sendxpress
+git checkout main && git pull origin main
+docker build -t sendxpress-app .
+docker stop sendxpress-container
+docker rm sendxpress-container
+docker run -d --name sendxpress-container \
+  --env-file .env.local \
+  -p 8081:80 \
+  --restart unless-stopped \
+  sendxpress-app
+docker exec nginx-proxy nginx -s reload
+```
+
+## 📊 Monitoring & Debugging
+
+### Check Container Status
+```bash
+ssh vizi@borg.tools 'docker ps | grep sendxpress'
+```
+
+### View Real-Time Logs
+```bash
+ssh vizi@borg.tools 'docker logs -f sendxpress-container'
+```
+
+### Test Production Site
+```bash
+curl -I https://sendxpress.borg.tools
+```
+
+### Container Management
+```bash
+# Restart
+ssh vizi@borg.tools 'docker restart sendxpress-container'
+
+# Stop
+ssh vizi@borg.tools 'docker stop sendxpress-container'
+
+# Start
+ssh vizi@borg.tools 'docker start sendxpress-container'
+
+# View resource usage
+ssh vizi@borg.tools 'docker stats sendxpress-container'
+```
+
+## 🔄 GitHub Actions (Auto-Deploy)
+
+### Automatic Deployment
+- **Trigger**: Push to `main` branch
+- **Action**: Automatically deploys to production
+- **URL**: https://sendxpress.borg.tools
+
+### Branch-Based Deployment
+- **main** branch → Auto-deploy to production
+- **Other branches** → Manual deployment required
+
+### GitHub Actions Status
+Check: https://github.com/vizi2000/xpress-mvp2/actions
+
+## 🏗️ Infrastructure Architecture
+
+```
+GitHub (vizi2000/xpress-mvp2)
+    ↓
+[git push] → GitHub Actions
+    ↓
+SSH → borg.tools server
+    ↓
+~/deploy.sh sendxpress
+    ↓
+Docker Container (sendxpress-container:8081)
+    ↓
+nginx-proxy (port 80/443)
+    ↓
+https://sendxpress.borg.tools
+```
+
+## 🛠️ Local Development
+
+### Start Development Server
+```bash
+python3 -m http.server 8080
+```
+
+### Access Application
+```
+http://localhost:8080/index-modular.html
+```
+
+### Environment Setup
+```bash
+cp .env.template .env.local
+# Edit .env.local with your API keys
+```
+
+## 📝 Development Workflow
+
+### Feature Development
+```bash
+# 1. Create feature branch
+git checkout -b feature/new-feature
+
+# 2. Make changes and test locally
+python3 -m http.server 8080
+
+# 3. Commit changes
+git add .
+git commit -m "feat: add new feature"
+
+# 4. Push to GitHub
+git push origin feature/new-feature
+
+# 5. Merge to main (after review)
+git checkout main
+git merge feature/new-feature
+git push origin main
+
+# 6. Deploy to production
+ssh vizi@borg.tools './deploy.sh sendxpress'
+```
+
+## 🚨 Emergency Procedures
+
+### Rollback to Previous Version
+```bash
+ssh vizi@borg.tools 'cd ~/apps/sendxpress && git reset --hard HEAD~1 && ~/deploy.sh sendxpress'
+```
+
+### View Nginx Logs
+```bash
+ssh vizi@borg.tools 'docker exec nginx-proxy tail -f /var/log/nginx/sendxpress.borg.tools.error.log'
+```
+
+### Clear Nginx Cache
+```bash
+ssh vizi@borg.tools 'docker exec nginx-proxy nginx -s reload'
+```
+
+## 🔐 Security Notes
+
+- Never commit `.env.local` or credentials to Git
+- SSH access is passwordless (key-based authentication)
+- Environment variables are injected at container runtime
+- HTTPS/SSL managed by nginx-proxy with Let's Encrypt
+
+## 📚 Key Files Reference
+
+- `index-modular.html` - Main application entry point
+- `src/services/` - API integration services
+- `src/components/` - UI components
+- `src/config/` - Configuration files
+- `Dockerfile` - Docker build instructions
+- `deploy-config.txt` - Deployment configuration
+- `.cursorrules` - Cursor AI instructions
+- `CLAUDE.md` - Claude AI documentation
+- `.geminirc` - This file (Gemini AI instructions)
+
+## 🤖 AI Assistant Behavior Guidelines
+
+When user requests deployment:
+1. ✅ Confirm all changes are committed
+2. ✅ Confirm all changes are pushed to GitHub
+3. ✅ Execute deployment command
+4. ✅ Monitor output for errors
+5. ✅ Test production URL
+6. ✅ Report status to user
+
+**IMPORTANT**: Always ask for confirmation before deploying to production unless user explicitly requests immediate deployment.
+
+---
+Created by The Collective Borg.tools
+Last Updated: 2025-10-22

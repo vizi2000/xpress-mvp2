@@ -7,6 +7,7 @@ RUN apk add --no-cache bash
 COPY index-modular.html /usr/share/nginx/html/index.html
 COPY index.html /usr/share/nginx/html/index-legacy.html
 COPY src/ /usr/share/nginx/html/src/
+COPY docs/ /usr/share/nginx/html/docs/
 COPY styles.css /usr/share/nginx/html/
 COPY script.js /usr/share/nginx/html/
 COPY config.js /usr/share/nginx/html/

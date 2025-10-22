@@ -169,10 +169,18 @@ export class ChatAgent {
             // Save history
             this.saveHistory();
 
-            return aiResponse;
+            return {
+                success: true,
+                message: aiResponse,
+                orderState: this.orderData,
+                readyForPayment: this.isOrderComplete()
+            };
         } catch (error) {
             console.error('❌ Error processing message:', error);
-            return this.getErrorMessage();
+            return {
+                success: false,
+                message: this.getErrorMessage()
+            };
         }
     }
 

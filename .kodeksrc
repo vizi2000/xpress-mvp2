@@ -1,0 +1,113 @@
+# Kodeks AI Configuration for Xpress.Delivery MVP
+
+## Project Information
+- **Name**: Xpress.Delivery MVP
+- **Type**: Courier service web application
+- **Stack**: Vanilla JavaScript (ES6 modules), Docker, nginx
+- **Production**: https://sendxpress.borg.tools
+
+## Deployment to Production
+
+### Quick Deploy Command
+```bash
+ssh vizi@borg.tools './deploy.sh sendxpress'
+```
+
+### Deploy Specific Branch
+```bash
+ssh vizi@borg.tools './deploy.sh sendxpress <branch-name>'
+```
+
+### Manual Deployment Steps
+```bash
+ssh vizi@borg.tools
+cd ~/apps/sendxpress
+git pull origin main
+docker build -t sendxpress-app .
+docker stop sendxpress-container && docker rm sendxpress-container
+docker run -d --name sendxpress-container --env-file .env.local -p 8081:80 sendxpress-app
+docker exec nginx-proxy nginx -s reload
+```
+
+### Deployment Configuration
+- **Server**: vizi@borg.tools (passwordless SSH)
+- **Port**: 8081 (internal), 80/443 (external via nginx-proxy)
+- **Container**: sendxpress-container
+- **Domain**: sendxpress.borg.tools
+- **Config**: deploy-config.txt
+
+### GitHub Actions Auto-Deploy
+- Push to `main` branch → Automatic deployment to production
+- Push to other branches → Manual deployment required
+
+### Check Deployment Status
+```bash
+# View running containers
+ssh vizi@borg.tools 'docker ps | grep sendxpress'
+
+# View logs
+ssh vizi@borg.tools 'docker logs -f sendxpress-container'
+
+# Test production site
+curl -I https://sendxpress.borg.tools
+
+# Restart container
+ssh vizi@borg.tools 'docker restart sendxpress-container'
+```
+
+### Emergency Rollback
+```bash
+ssh vizi@borg.tools 'cd ~/apps/sendxpress && git reset --hard HEAD~1 && ~/deploy.sh sendxpress'
+```
+
+## Development Workflow
+
+### Local Development
+```bash
+python3 -m http.server 8080
+# Open http://localhost:8080/index-modular.html
+```
+
+### Git Workflow
+```bash
+# Create feature branch
+git checkout -b feature/feature-name
+
+# Make changes and commit
+git add .
+git commit -m "feat: description"
+git push origin feature/feature-name
+
+# Deploy to production (after merge to main)
+git checkout main
+git merge feature/feature-name
+git push origin main
+ssh vizi@borg.tools './deploy.sh sendxpress'
+```
+
+## Architecture Notes
+
+**Main Files**:
+- `index-modular.html` - Main entry point
+- `src/services/` - API integrations (Xpress, Google Maps)
+- `src/components/` - UI components
+- `src/config/` - Configuration
+
+**Docker Setup**:
+- Base: nginx:alpine
+- Port: 8081 → 80/443 (nginx-proxy)
+- Environment injection via inject-env.sh
+
+## AI Assistant Guidelines
+
+When user requests deployment:
+1. Verify changes are committed and pushed to GitHub
+2. Execute: `ssh vizi@borg.tools './deploy.sh sendxpress'`
+3. Monitor deployment output for errors
+4. Test production URL
+5. Report status to user
+
+NEVER deploy without user confirmation unless explicitly requested.
+
+---
+Created by The Collective Borg.tools
