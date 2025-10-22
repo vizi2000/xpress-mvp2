@@ -59,7 +59,7 @@ export class ArrowBackground {
                 direction: direction, // Rotation in degrees
                 size: 20 + Math.random() * 40, // Size 20-60px
                 speed: 0.2 + Math.random() * 0.5, // Speed 0.2-0.7
-                opacity: 0.05 + Math.random() * 0.1 // Opacity 0.05-0.15
+                opacity: 0.3 + Math.random() * 0.3 // Opacity 0.3-0.6 (higher for visibility)
             });
         }
     }
