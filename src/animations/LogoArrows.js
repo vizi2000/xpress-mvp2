@@ -75,39 +75,61 @@ export class LogoArrowsAnimation {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.width, this.height);
 
-        // Draw arrows with enhanced glow effect
+        // Draw arrows with background illumination
         this.arrows.forEach(arrow => {
             const angle = Math.atan2(arrow.vy, arrow.vx);
 
             this.ctx.save();
             this.ctx.translate(arrow.x, arrow.y);
+
+            // BACKGROUND LIGHT HALOS - these actually illuminate the background
+            // Large outer halo (creates ambient light on background)
+            const gradient1 = this.ctx.createRadialGradient(0, 0, 0, 0, 0, arrow.size * 4);
+            gradient1.addColorStop(0, `rgba(255, 223, 0, ${arrow.opacity * 0.4})`);
+            gradient1.addColorStop(0.3, `rgba(244, 200, 16, ${arrow.opacity * 0.25})`);
+            gradient1.addColorStop(0.6, `rgba(244, 200, 16, ${arrow.opacity * 0.1})`);
+            gradient1.addColorStop(1, 'rgba(244, 200, 16, 0)');
+            this.ctx.fillStyle = gradient1;
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, arrow.size * 4, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Medium halo (brighter, closer to arrow)
+            const gradient2 = this.ctx.createRadialGradient(0, 0, 0, 0, 0, arrow.size * 2.5);
+            gradient2.addColorStop(0, `rgba(255, 255, 200, ${arrow.opacity * 0.6})`);
+            gradient2.addColorStop(0.4, `rgba(255, 223, 0, ${arrow.opacity * 0.4})`);
+            gradient2.addColorStop(0.7, `rgba(244, 200, 16, ${arrow.opacity * 0.2})`);
+            gradient2.addColorStop(1, 'rgba(244, 200, 16, 0)');
+            this.ctx.fillStyle = gradient2;
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, arrow.size * 2.5, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Inner bright halo (white/yellow intense light)
+            const gradient3 = this.ctx.createRadialGradient(0, 0, 0, 0, 0, arrow.size * 1.5);
+            gradient3.addColorStop(0, `rgba(255, 255, 255, ${arrow.opacity * 0.8})`);
+            gradient3.addColorStop(0.5, `rgba(255, 255, 200, ${arrow.opacity * 0.6})`);
+            gradient3.addColorStop(1, `rgba(255, 223, 0, ${arrow.opacity * 0.3})`);
+            this.ctx.fillStyle = gradient3;
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, arrow.size * 1.5, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Now draw the arrow on top
             this.ctx.rotate(angle);
 
-            // Multi-layer glow effect for enhanced brightness
-
-            // Outer glow - large blur (yellow)
-            this.ctx.shadowBlur = 50;
-            this.ctx.shadowColor = `rgba(244, 200, 16, ${arrow.opacity * 0.8})`;
+            // Arrow with glow
+            this.ctx.shadowBlur = 20;
+            this.ctx.shadowColor = `rgba(255, 255, 255, ${arrow.opacity})`;
             this.ctx.font = `${arrow.size}px Arial`;
-            this.ctx.fillStyle = `rgba(244, 200, 16, ${arrow.opacity * 0.3})`;
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${arrow.opacity * 0.9})`;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText('→', 0, 0);
 
-            // Middle glow - medium blur (bright yellow)
-            this.ctx.shadowBlur = 30;
-            this.ctx.shadowColor = `rgba(255, 215, 0, ${arrow.opacity})`;
-            this.ctx.fillStyle = `rgba(255, 215, 0, ${arrow.opacity * 0.6})`;
-            this.ctx.fillText('→', 0, 0);
-
-            // Inner glow - small blur (white/bright center)
-            this.ctx.shadowBlur = 15;
-            this.ctx.shadowColor = `rgba(255, 255, 255, ${arrow.opacity})`;
-            this.ctx.fillStyle = `rgba(255, 255, 255, ${arrow.opacity * 0.9})`;
-            this.ctx.fillText('→', 0, 0);
-
-            // Core arrow - no blur (solid bright yellow)
-            this.ctx.shadowBlur = 0;
+            // Core arrow - bright yellow
+            this.ctx.shadowBlur = 10;
+            this.ctx.shadowColor = `rgba(255, 223, 0, ${arrow.opacity})`;
             this.ctx.fillStyle = `rgba(255, 223, 0, ${arrow.opacity})`;
             this.ctx.fillText('→', 0, 0);
 
