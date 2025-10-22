@@ -11,24 +11,15 @@ body {
     color: #ffffff; /* Changed from #333 to white for dark theme */
     min-height: 100vh;
 
-    /* 8-point radial gradient mesh */
+    /* Yellow-Black gradient background */
     background:
-        /* Top row - 3 points */
-        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.3) 0px, transparent 50%),
-        radial-gradient(at 50% 0%, rgba(139, 92, 246, 0.3) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(244, 200, 16, 0.2) 0px, transparent 50%),
+        /* Yellow glow points */
+        radial-gradient(at 20% 20%, rgba(244, 200, 16, 0.15) 0px, transparent 40%),
+        radial-gradient(at 80% 30%, rgba(244, 200, 16, 0.1) 0px, transparent 40%),
+        radial-gradient(at 50% 70%, rgba(244, 200, 16, 0.12) 0px, transparent 40%),
 
-        /* Middle row - 2 points */
-        radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.2) 0px, transparent 50%),
-        radial-gradient(at 100% 50%, rgba(99, 102, 241, 0.3) 0px, transparent 50%),
-
-        /* Bottom row - 3 points */
-        radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.2) 0px, transparent 50%),
-        radial-gradient(at 50% 100%, rgba(244, 200, 16, 0.3) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.3) 0px, transparent 50%),
-
-        /* Base gradient */
-        linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        /* Base: Pure black */
+        #000000;
 
     background-size: 100% 100%;
     background-attachment: fixed;
