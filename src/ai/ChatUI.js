@@ -229,17 +229,76 @@ export class ChatUI {
      * Show payment buttons when ready
      */
     showPaymentButtons() {
+        const orderData = this.agent.getOrderData();
+        const amount = this.calculateAmount();
+
+        // Show confirmation summary first
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'chat-order-summary';
+        summaryDiv.innerHTML = `
+            <div class="summary-header">${this.agent.language === 'pl' ? '📋 Podsumowanie zamówienia' : '📋 Order Summary'}</div>
+            <div class="summary-content">
+                <div class="summary-row">
+                    <span class="summary-label">${this.agent.language === 'pl' ? 'Odbiór:' : 'Pickup:'}</span>
+                    <span class="summary-value">${orderData.pickupAddress || orderData.pickup || '—'}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">${this.agent.language === 'pl' ? 'Dostawa:' : 'Delivery:'}</span>
+                    <span class="summary-value">${orderData.deliveryAddress || orderData.delivery || '—'}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">${this.agent.language === 'pl' ? 'Wielkość:' : 'Size:'}</span>
+                    <span class="summary-value">${orderData.packageSize || '—'}</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span class="summary-label">${this.agent.language === 'pl' ? 'Do zapłaty:' : 'Total:'}</span>
+                    <span class="summary-value"><strong>${amount.toFixed(2)} PLN</strong></span>
+                </div>
+            </div>
+            <div class="summary-confirm">
+                <p>${this.agent.language === 'pl' ? 'Czy dane są poprawne?' : 'Are the details correct?'}</p>
+                <button class="confirm-btn yes-btn">${this.agent.language === 'pl' ? '✓ Tak, kontynuuj' : '✓ Yes, continue'}</button>
+                <button class="confirm-btn no-btn">${this.agent.language === 'pl' ? '✗ Nie, popraw' : '✗ No, correct'}</button>
+            </div>
+        `;
+
+        this.messagesContainer.appendChild(summaryDiv);
+        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+
+        // Bind confirmation events
+        setTimeout(() => {
+            summaryDiv.querySelector('.yes-btn').addEventListener('click', () => {
+                summaryDiv.remove();
+                this.showActualPaymentButtons();
+            });
+
+            summaryDiv.querySelector('.no-btn').addEventListener('click', () => {
+                summaryDiv.remove();
+                this.addMessage(
+                    this.agent.language === 'pl'
+                        ? 'W porządku, powiedz mi co trzeba poprawić.'
+                        : 'Okay, tell me what needs to be corrected.',
+                    'assistant'
+                );
+            });
+        }, 100);
+    }
+
+    /**
+     * Show actual payment buttons after confirmation
+     */
+    showActualPaymentButtons() {
         const amount = this.calculateAmount();
         const buttonsDiv = document.createElement('div');
         buttonsDiv.className = 'chat-payment-buttons';
         buttonsDiv.innerHTML = `
             <p class="payment-prompt">${this.agent.language === 'pl' ? 'Wybierz metodę płatności:' : 'Choose payment method:'}</p>
             <button class="payment-btn revolut-btn" data-method="revolut">
-                💳 Revolut
+                Revolut
                 <span class="payment-amount">${amount.toFixed(2)} PLN</span>
             </button>
             <button class="payment-btn payu-btn" data-method="payu">
-                💰 PayU
+                PayU
                 <span class="payment-amount">${amount.toFixed(2)} PLN</span>
             </button>
         `;
