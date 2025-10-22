@@ -45,6 +45,7 @@ replace_placeholder "__REVOLUT_API_KEY__" "${REVOLUT_API_KEY:-YOUR_REVOLUT_MERCH
 replace_placeholder "__REVOLUT_WEBHOOK_SECRET__" "${REVOLUT_WEBHOOK_SECRET:-YOUR_WEBHOOK_SECRET}"
 replace_placeholder "__REVOLUT_PUBLIC_KEY__" "${REVOLUT_PUBLIC_KEY:-YOUR_REVOLUT_PUBLIC_KEY}"
 replace_placeholder "__REVOLUT_ENVIRONMENT__" "${REVOLUT_ENVIRONMENT:-sandbox}"
+replace_placeholder "__OPENROUTER_API_KEY__" "${OPENROUTER_API_KEY}"
 
 echo "✅ Environment variables injected successfully"
 
