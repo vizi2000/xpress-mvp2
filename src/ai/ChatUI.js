@@ -340,32 +340,40 @@ export class ChatUI {
     }
 
     /**
-     * Fill form from order state
+     * Fill form from order state and trigger actions
      */
     fillFormFromOrderState(orderState) {
-        if (orderState.pickup) {
+        if (!window.xpressApp) {
+            console.warn('⚠️ XpressApp not available for chat integration');
+            return;
+        }
+
+        // Fill addresses and trigger calculation with visual feedback
+        if (orderState.pickup && orderState.delivery) {
+            console.log('📋 Chat → Form: Filling addresses with animation');
+            window.xpressApp.fillAddressesFromChat(orderState.pickup, orderState.delivery);
+        } else if (orderState.pickup) {
+            // Only pickup filled
             const pickupInput = document.getElementById('pickup-address');
             if (pickupInput && !pickupInput.value) {
                 pickupInput.value = orderState.pickup;
+                console.log('📋 Chat → Form: Pickup address filled');
             }
-        }
-
-        if (orderState.delivery) {
+        } else if (orderState.delivery) {
+            // Only delivery filled
             const deliveryInput = document.getElementById('delivery-address');
             if (deliveryInput && !deliveryInput.value) {
                 deliveryInput.value = orderState.delivery;
+                console.log('📋 Chat → Form: Delivery address filled');
             }
         }
 
-        // Trigger address change if both addresses are filled
-        if (orderState.pickup && orderState.delivery) {
-            console.log('📋 Auto-filling form from chat');
-            // Dispatch input events to trigger form validation
-            const pickupInput = document.getElementById('pickup-address');
-            const deliveryInput = document.getElementById('delivery-address');
-
-            if (pickupInput) pickupInput.dispatchEvent(new Event('input', { bubbles: true }));
-            if (deliveryInput) deliveryInput.dispatchEvent(new Event('input', { bubbles: true }));
+        // Trigger package selection if specified
+        if (orderState.packageSize) {
+            console.log('📋 Chat → Form: Selecting package', orderState.packageSize);
+            setTimeout(() => {
+                window.xpressApp.selectPackageFromChat(orderState.packageSize);
+            }, 1000); // Wait for addresses to be processed
         }
     }
 

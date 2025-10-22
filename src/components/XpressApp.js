@@ -103,17 +103,19 @@ export class XpressApp {
             console.log('ℹ️ AI Chat disabled - no API key configured');
         }
 
-        // Check if Google Maps is already loaded
-        this.checkGoogleMapsReady();
+        // Initialize autocomplete (LocationIQ or Google Maps)
+        // LocationIQ is ready immediately, no need to wait for script loading
+        console.log('🗺️ Initializing autocomplete service...');
+        this.googleMapsService.initializeAutocomplete();
     }
-    
-    // Check if Google Maps is ready and initialize if so
+
+    // Check if Google Maps is ready and initialize if so (DEPRECATED - using LocationIQ)
     checkGoogleMapsReady() {
         if (window.googleMapsReady && window.google && window.google.maps) {
             console.log('✅ Google Maps already loaded - initializing autocomplete');
             this.googleMapsService.initializeAutocomplete();
         } else {
-            console.log('⏳ Waiting for Google Maps to load...');
+            console.log('⏳ Google Maps not needed - using LocationIQ');
         }
     }
 
@@ -420,10 +422,139 @@ export class XpressApp {
             UIHelpers.scrollToElement('order-form-section');
         }
     }
+
+    // ============================================
+    // PUBLIC API FOR CHAT INTEGRATION
+    // ============================================
+
+    /**
+     * Fill address fields from chat and trigger calculation
+     * @param {string} pickup - Pickup address
+     * @param {string} delivery - Delivery address
+     */
+    fillAddressesFromChat(pickup, delivery) {
+        console.log('📋 Chat filling addresses:', { pickup, delivery });
+
+        const pickupInput = document.getElementById('pickup-address');
+        const deliveryInput = document.getElementById('delivery-address');
+
+        if (pickupInput && pickup) {
+            pickupInput.value = pickup;
+            // Add visual feedback
+            pickupInput.style.borderColor = '#10b981';
+            pickupInput.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            setTimeout(() => {
+                pickupInput.style.borderColor = '';
+                pickupInput.style.boxShadow = '';
+            }, 2000);
+        }
+
+        if (deliveryInput && delivery) {
+            deliveryInput.value = delivery;
+            // Add visual feedback
+            deliveryInput.style.borderColor = '#10b981';
+            deliveryInput.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            setTimeout(() => {
+                deliveryInput.style.borderColor = '';
+                deliveryInput.style.boxShadow = '';
+            }, 2000);
+        }
+
+        // Trigger address change to calculate route
+        if (pickup && delivery) {
+            this.handleAddressChange(pickup, delivery);
+
+            // Scroll to results after a brief delay
+            setTimeout(() => {
+                this.scrollToResults();
+            }, 500);
+        }
+    }
+
+    /**
+     * Select package size from chat
+     * @param {string} size - Package size: 'small', 'medium', or 'large'
+     */
+    selectPackageFromChat(size) {
+        console.log('📦 Chat selecting package:', size);
+
+        const packageOption = document.querySelector(`[data-size="${size}"]`);
+        if (!packageOption) {
+            console.error('Package option not found:', size);
+            return;
+        }
+
+        // Remove previous selection
+        document.querySelectorAll('.package-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+
+        // Select this option
+        packageOption.classList.add('selected');
+
+        // Add visual feedback
+        packageOption.style.transform = 'scale(1.05)';
+        packageOption.style.transition = 'transform 0.3s ease';
+        setTimeout(() => {
+            packageOption.style.transform = '';
+        }, 500);
+
+        // Update order data
+        this.orderData.selectedPackage = size;
+
+        // Trigger order button click after a brief delay
+        setTimeout(() => {
+            const orderBtn = packageOption.querySelector('.order-btn');
+            if (orderBtn) {
+                orderBtn.click();
+
+                // Scroll to order form
+                setTimeout(() => {
+                    this.scrollToOrderForm();
+                }, 500);
+            }
+        }, 300);
+    }
+
+    /**
+     * Scroll to results section (prices)
+     */
+    scrollToResults() {
+        const resultsSection = document.getElementById('results-section');
+        if (resultsSection && resultsSection.style.display !== 'none') {
+            console.log('📜 Scrolling to results section');
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    /**
+     * Scroll to order form
+     */
+    scrollToOrderForm() {
+        const orderFormSection = document.getElementById('order-form-section');
+        if (orderFormSection && orderFormSection.style.display !== 'none') {
+            console.log('📜 Scrolling to order form');
+            orderFormSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    /**
+     * Get current order state (for chat)
+     * @returns {Object} Current order data
+     */
+    getOrderState() {
+        return {
+            pickup: this.orderData.pickup,
+            delivery: this.orderData.delivery,
+            distance: this.orderData.distance,
+            selectedPackage: this.orderData.selectedPackage,
+            prices: this.orderData.prices
+        };
+    }
 }
 
 // Initialize app when script loads
 const app = new XpressApp();
 
-// Store app reference for debugging and Google Maps callback
+// Make app globally available for chat integration and debugging
 window.xpressApp = app;

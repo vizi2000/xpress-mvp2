@@ -7,6 +7,7 @@ export class LocationIQService {
         this.apiKey = apiKey;
         this.baseUrl = 'https://api.locationiq.com/v1';
         this.autocompleteCache = new Map();
+        console.log('✅ LocationIQService initialized with API key:', apiKey ? `${apiKey.substr(0, 10)}...` : 'NONE');
     }
 
     /**

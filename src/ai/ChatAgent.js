@@ -172,7 +172,14 @@ export class ChatAgent {
             return {
                 success: true,
                 message: aiResponse,
-                orderState: this.orderData,
+                orderState: {
+                    pickup: this.orderData.pickupAddress,
+                    delivery: this.orderData.deliveryAddress,
+                    packageSize: this.orderData.packageSize,
+                    contactName: this.orderData.contactName,
+                    contactEmail: this.orderData.contactEmail,
+                    contactPhone: this.orderData.contactPhone
+                },
                 readyForPayment: this.isOrderComplete()
             };
         } catch (error) {
