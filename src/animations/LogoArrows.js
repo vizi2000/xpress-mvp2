@@ -75,7 +75,7 @@ export class LogoArrowsAnimation {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.width, this.height);
 
-        // Draw arrows
+        // Draw arrows with enhanced glow effect
         this.arrows.forEach(arrow => {
             const angle = Math.atan2(arrow.vy, arrow.vx);
 
@@ -83,15 +83,32 @@ export class LogoArrowsAnimation {
             this.ctx.translate(arrow.x, arrow.y);
             this.ctx.rotate(angle);
 
-            // Glow effect
-            this.ctx.shadowBlur = 20;
-            this.ctx.shadowColor = `rgba(244, 200, 16, ${arrow.opacity})`;
+            // Multi-layer glow effect for enhanced brightness
 
-            // Draw arrow (emoji or text)
+            // Outer glow - large blur (yellow)
+            this.ctx.shadowBlur = 50;
+            this.ctx.shadowColor = `rgba(244, 200, 16, ${arrow.opacity * 0.8})`;
             this.ctx.font = `${arrow.size}px Arial`;
-            this.ctx.fillStyle = `rgba(244, 200, 16, ${arrow.opacity})`;
+            this.ctx.fillStyle = `rgba(244, 200, 16, ${arrow.opacity * 0.3})`;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('→', 0, 0);
+
+            // Middle glow - medium blur (bright yellow)
+            this.ctx.shadowBlur = 30;
+            this.ctx.shadowColor = `rgba(255, 215, 0, ${arrow.opacity})`;
+            this.ctx.fillStyle = `rgba(255, 215, 0, ${arrow.opacity * 0.6})`;
+            this.ctx.fillText('→', 0, 0);
+
+            // Inner glow - small blur (white/bright center)
+            this.ctx.shadowBlur = 15;
+            this.ctx.shadowColor = `rgba(255, 255, 255, ${arrow.opacity})`;
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${arrow.opacity * 0.9})`;
+            this.ctx.fillText('→', 0, 0);
+
+            // Core arrow - no blur (solid bright yellow)
+            this.ctx.shadowBlur = 0;
+            this.ctx.fillStyle = `rgba(255, 223, 0, ${arrow.opacity})`;
             this.ctx.fillText('→', 0, 0);
 
             this.ctx.restore();
