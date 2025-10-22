@@ -1,6 +1,6 @@
 /**
  * ArrowBackground - Animated canvas background with rotating arrows
- * Brand identity visual element - arrows at 45° intervals (8 directions)
+ * Brand identity visual element - arrows at 45ï¿½ intervals (8 directions)
  */
 export class ArrowBackground {
     constructor(canvasId) {
@@ -14,7 +14,7 @@ export class ArrowBackground {
         this.arrows = [];
         this.animationId = null;
 
-        // 8 directions at 45° intervals
+        // 8 directions at 45ï¿½ intervals
         this.directions = [0, 45, 90, 135, 180, 225, 270, 315];
 
         this.init();
@@ -77,8 +77,8 @@ export class ArrowBackground {
         this.ctx.rotate((arrow.direction * Math.PI) / 180);
 
         // Set style
-        this.ctx.fillStyle = `rgba(0, 0, 0, ${arrow.opacity})`;
-        this.ctx.strokeStyle = `rgba(0, 0, 0, ${arrow.opacity})`;
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${arrow.opacity})`;
+        this.ctx.strokeStyle = `rgba(255, 255, 255, ${arrow.opacity})`;
         this.ctx.lineWidth = 2;
 
         // Draw arrow shaft (rectangle)
@@ -139,7 +139,7 @@ export class ArrowBackground {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
-            console.log('ø ArrowBackground animation stopped');
+            console.log('ï¿½ ArrowBackground animation stopped');
         }
     }
 
@@ -149,7 +149,7 @@ export class ArrowBackground {
     start() {
         if (!this.animationId) {
             this.animate();
-            console.log('¶ ArrowBackground animation started');
+            console.log('ï¿½ ArrowBackground animation started');
         }
     }
 }
