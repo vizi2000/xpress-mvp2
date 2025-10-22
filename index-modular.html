@@ -24,6 +24,7 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
+            <canvas id="logo-arrows-bg"></canvas>
             <img src="docs/logotyp_poziom.png" alt="Xpress Delivery Logo" class="logo-image">
             <p>Wyślij swoją przesyłkę ekspresową w 3 prostych krokach!</p>
         </header>
@@ -294,5 +295,15 @@
     
     <!-- Modular JavaScript (ES6 Modules) -->
     <script type="module" src="src/components/XpressApp.js"></script>
+
+    <!-- Logo Arrows Animation -->
+    <script type="module">
+        import { LogoArrowsAnimation } from './src/animations/LogoArrows.js';
+
+        // Initialize after DOM loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new LogoArrowsAnimation('logo-arrows-bg');
+        });
+    </script>
 </body>
 </html>
