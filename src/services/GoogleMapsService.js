@@ -91,36 +91,26 @@ export class GoogleMapsService {
     // Setup LocationIQ autocomplete for a single input
     setupLocationIQInput(input, type) {
         let debounceTimer;
-        let suggestionsList;
+        let dropdown = null;
 
-        // Create suggestions dropdown
-        const createSuggestionsList = () => {
-            if (suggestionsList) return suggestionsList;
+        // Create dropdown using LocationIQService method
+        const createDropdown = () => {
+            if (dropdown) return dropdown;
 
-            suggestionsList = document.createElement('div');
-            suggestionsList.className = 'locationiq-suggestions';
-            suggestionsList.style.cssText = `
-                position: absolute !important;
-                z-index: 999999 !important;
-                background: #ffffff !important;
-                border: 2px solid #F4C810 !important;
-                border-radius: 12px !important;
-                display: none !important;
-                visibility: visible !important;
-                max-height: 300px !important;
-                overflow-y: auto !important;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
-                top: calc(100% + 8px) !important;
-                left: 0 !important;
-                right: 0 !important;
-                margin-top: 0 !important;
-            `;
+            dropdown = this.locationIQ.createDropdown();
 
             // Make parent container position relative
             input.parentElement.style.position = 'relative';
-            input.parentElement.appendChild(suggestionsList);
+            input.parentElement.appendChild(dropdown);
 
-            return suggestionsList;
+            // Override selectSuggestion to handle selection
+            this.locationIQ.selectSuggestion = (result, dropdownElement) => {
+                input.value = result.description || result.display_name || '';
+                this.locationIQ.hideDropdown(dropdownElement);
+                this.onAddressSelected();
+            };
+
+            return dropdown;
         };
 
         // Handle input event
@@ -128,7 +118,8 @@ export class GoogleMapsService {
             const query = e.target.value.trim();
 
             if (query.length < 3) {
-                createSuggestionsList().style.display = 'none';
+                const list = createDropdown();
+                this.locationIQ.hideDropdown(list);
                 return;
             }
 
@@ -136,72 +127,97 @@ export class GoogleMapsService {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(async () => {
                 try {
+                    const list = createDropdown();
+
+                    // Show loading state
+                    this.locationIQ.showLoading(list);
+
+                    // ENHANCEMENT: For very short queries that look like street names,
+                    // try multiple cities to get better results
+                    let enrichedQuery = query;
+
+                    // Check if query is short and doesn't contain common city names
+                    const queryLower = query.toLowerCase()
+                        .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e')
+                        .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/ó/g, 'o')
+                        .replace(/ś/g, 's').replace(/ź/g, 'z').replace(/ż/g, 'z');
+
+                    const commonCities = ['warszaw', 'krakow', 'lodz', 'wroclaw', 'poznan',
+                                         'gdansk', 'szczecin', 'katowic', 'gdynia', 'sopot'];
+                    const hasCityName = commonCities.some(city => queryLower.includes(city));
+
+                    // If no city name detected, we'll rely on LocationIQ's own logic
+                    // and our coordinate-based filtering (already implemented)
+
                     console.log(`🔍 LocationIQ autocomplete for ${type}:`, query);
                     const suggestions = await this.locationIQ.autocomplete(query);
 
-                    const list = createSuggestionsList();
-                    // Removed debug log - suggestions structure no longer logged in production
-                    list.innerHTML = '';
+                    // Show results with enhanced UI
+                    this.locationIQ.showDropdown(suggestions, list);
 
-                    if (suggestions && suggestions.length > 0) {
-                        suggestions.forEach(suggestion => {
-                            const item = document.createElement('div');
-                            item.className = 'suggestion-item';
-                            item.style.cssText = `
-                                padding: 12px 16px !important;
-                                cursor: pointer !important;
-                                border-bottom: 1px solid rgba(244, 200, 16, 0.2) !important;
-                                color: #000 !important;
-                                font-size: 0.95rem !important;
-                                transition: all 0.2s ease !important;
-                            `;
-                            // Use 'description' field from LocationIQService
-                            item.textContent = suggestion.description || suggestion.display_name || '';
-
-                            item.addEventListener('mouseenter', () => {
-                                item.style.backgroundColor = 'rgba(244, 200, 16, 0.1)';
-                                item.style.paddingLeft = '20px';
-                            });
-
-                            item.addEventListener('mouseleave', () => {
-                                item.style.backgroundColor = 'white';
-                                item.style.paddingLeft = '16px';
-                            });
-
-                            item.addEventListener('click', () => {
-                                // Use 'description' field from LocationIQService
-                                input.value = suggestion.description || suggestion.display_name || '';
-                                list.style.display = 'none';
-                                this.onAddressSelected();
-                            });
-
-                            list.appendChild(item);
-                        });
-
-                        list.style.display = 'block';
-                    } else {
-                        list.style.display = 'none';
-                    }
                 } catch (error) {
                     console.error(`❌ LocationIQ autocomplete error for ${type}:`, error);
+                    const list = createDropdown();
+                    this.locationIQ.hideDropdown(list);
                 }
             }, 300); // 300ms debounce
         });
 
-        // Hide suggestions when clicking outside
+        // Hide dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            if (suggestionsList && e.target !== input && !suggestionsList.contains(e.target)) {
-                suggestionsList.style.display = 'none';
+            if (dropdown && e.target !== input && !dropdown.contains(e.target)) {
+                this.locationIQ.hideDropdown(dropdown);
             }
         });
 
-        // Hide suggestions on blur (with delay to allow click)
+        // Hide dropdown on blur (with delay to allow click)
         input.addEventListener('blur', () => {
             setTimeout(() => {
-                if (suggestionsList) {
-                    suggestionsList.style.display = 'none';
+                if (dropdown) {
+                    this.locationIQ.hideDropdown(dropdown);
                 }
             }, 200);
+        });
+
+        // Keyboard navigation
+        input.addEventListener('keydown', (e) => {
+            if (!dropdown || dropdown.style.display === 'none') return;
+
+            const items = dropdown.querySelectorAll('.suggestion-item:not(.no-results):not(.loading)');
+            if (items.length === 0) return;
+
+            let currentIndex = Array.from(items).findIndex(item => item.classList.contains('selected'));
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                // Remove previous selection
+                if (currentIndex >= 0) {
+                    items[currentIndex].classList.remove('selected');
+                }
+                // Select next item
+                currentIndex = (currentIndex + 1) % items.length;
+                items[currentIndex].classList.add('selected');
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                // Remove previous selection
+                if (currentIndex >= 0) {
+                    items[currentIndex].classList.remove('selected');
+                }
+                // Select previous item
+                currentIndex = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
+                items[currentIndex].classList.add('selected');
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                // Select highlighted item
+                if (currentIndex >= 0) {
+                    items[currentIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                this.locationIQ.hideDropdown(dropdown);
+            }
         });
     }
     
