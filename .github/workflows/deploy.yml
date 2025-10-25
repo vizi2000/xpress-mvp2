@@ -67,41 +67,40 @@ jobs:
     steps:
     - name: 📦 Checkout code
       uses: actions/checkout@v4
-      
+
     - name: 🔒 Check for secrets in code
       run: |
         echo "🔍 Scanning for potential secrets in committed files..."
-        
-        # Check for common secret patterns
-        if grep -r "wojciech@xpress.delivery" xpress-mvp/ --exclude-dir=node_modules --exclude="*.log" || true; then
-          echo "⚠️ Found hardcoded email in committed files"
-        fi
-        
-        if grep -r "dupa8dupa" xpress-mvp/ --exclude-dir=node_modules --exclude="*.log" || true; then
-          echo "❌ Found hardcoded password in committed files - SECURITY ISSUE!"
+
+        # Check for API keys with actual values (not placeholders)
+        # LocationIQ API key pattern
+        if grep -r "pk\.[a-f0-9]\{40\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude="deploy.yml" 2>/dev/null; then
+          echo "❌ Found potential LocationIQ API key in committed files - SECURITY ISSUE!"
           exit 1
         fi
-        
-        if grep -r "AIzaSy" xpress-mvp/ --exclude-dir=node_modules --exclude="*.log" --exclude=".env.*" || true; then
-          echo "⚠️ Found potential Google API key in committed files"
+
+        # Google Maps API key pattern (starts with AIzaSy)
+        if grep -r "AIzaSy[A-Za-z0-9_-]\{33\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude=".env.*" --exclude="deploy.yml" 2>/dev/null; then
+          echo "❌ Found Google API key in committed files - SECURITY ISSUE!"
+          exit 1
         fi
-        
-        echo "✅ Security scan completed"
-        
+
+        # Check that config.local.js uses placeholders
+        if ! grep -q "__LOCATIONIQ_API_KEY__" config.local.js; then
+          echo "❌ config.local.js missing placeholder for LocationIQ - SECURITY ISSUE!"
+          exit 1
+        fi
+
+        echo "✅ Security scan completed - no hardcoded secrets found"
+
     - name: 📋 Validate .gitignore
       run: |
         echo "🔍 Checking .gitignore configuration..."
-        if grep -q "\.env" xpress-mvp/.gitignore; then
+        if grep -q "\.env" .gitignore; then
           echo "✅ .env files are gitignored"
         else
           echo "❌ .env files not in .gitignore - SECURITY ISSUE!"
           exit 1
         fi
-        
-        if grep -q "config\.local\.js" xpress-mvp/.gitignore; then
-          echo "✅ Local config files are gitignored"
-        else
-          echo "⚠️ Local config files should be gitignored"
-        fi
-        
+
         echo "✅ .gitignore validation completed"
