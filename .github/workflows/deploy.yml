@@ -72,22 +72,31 @@ jobs:
       run: |
         echo "🔍 Scanning for potential secrets in committed files..."
 
-        # Check for API keys with actual values (not placeholders)
-        # LocationIQ API key pattern
-        if grep -r "pk\.[a-f0-9]\{40\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude="deploy.yml" 2>/dev/null; then
-          echo "❌ Found potential LocationIQ API key in committed files - SECURITY ISSUE!"
-          exit 1
-        fi
-
-        # Google Maps API key pattern (starts with AIzaSy)
-        if grep -r "AIzaSy[A-Za-z0-9_-]\{33\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude=".env.*" --exclude="deploy.yml" 2>/dev/null; then
-          echo "❌ Found Google API key in committed files - SECURITY ISSUE!"
-          exit 1
-        fi
-
-        # Check that config.local.js uses placeholders
+        # Check that config.local.js uses placeholders (most important check)
         if ! grep -q "__LOCATIONIQ_API_KEY__" config.local.js; then
           echo "❌ config.local.js missing placeholder for LocationIQ - SECURITY ISSUE!"
+          exit 1
+        fi
+
+        if ! grep -q "__GOOGLE_MAPS_API_KEY__" config.local.js; then
+          echo "❌ config.local.js missing placeholder for Google Maps - SECURITY ISSUE!"
+          exit 1
+        fi
+
+        # Check for API keys with actual values (not placeholders)
+        # LocationIQ API key pattern: pk. followed by 40 hex chars
+        LOCATIONIQ_MATCHES=$(grep -r "pk\.[a-f0-9]\{40\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude="deploy.yml" 2>/dev/null || true)
+        if [ -n "$LOCATIONIQ_MATCHES" ]; then
+          echo "❌ Found potential LocationIQ API key in committed files:"
+          echo "$LOCATIONIQ_MATCHES"
+          exit 1
+        fi
+
+        # Google Maps API key pattern: AIzaSy followed by 33 chars
+        GMAPS_MATCHES=$(grep -r "AIzaSy[A-Za-z0-9_-]\{33\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude=".env.*" --exclude="deploy.yml" 2>/dev/null || true)
+        if [ -n "$GMAPS_MATCHES" ]; then
+          echo "❌ Found Google API key in committed files:"
+          echo "$GMAPS_MATCHES"
           exit 1
         fi
 
