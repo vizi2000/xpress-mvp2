@@ -136,19 +136,21 @@ export class ChatUI {
             // Remove typing indicator
             typingIndicator.remove();
 
-            // Add AI response
-            this.addMessage(response, 'assistant');
+            // Add AI response (response.message contains the text)
+            this.addMessage(response.message || response, 'assistant');
             this.scrollToBottom();
 
-            // Check if order is ready for form filling
-            const orderState = this.agent.getOrderState();
-            console.log('CHAT UI RECEIVED orderState:', orderState);
-            console.log('Has pickup?', !!orderState.pickup);
-            console.log('Has delivery?', !!orderState.delivery);
-            console.log('window.xpressApp exists?', !!window.xpressApp);
+            // Check if order is ready for form filling (response.orderState contains the data)
+            if (response.orderState) {
+                const orderState = response.orderState;
+                console.log('CHAT UI RECEIVED orderState:', orderState);
+                console.log('Has pickup?', !!orderState.pickup);
+                console.log('Has delivery?', !!orderState.delivery);
+                console.log('window.xpressApp exists?', !!window.xpressApp);
 
-            if (orderState.pickup && orderState.delivery && window.xpressApp) {
-                this.fillFormFromOrderState(orderState);
+                if (orderState.pickup && orderState.delivery && window.xpressApp) {
+                    this.fillFormFromOrderState(orderState);
+                }
             }
 
         } catch (error) {
