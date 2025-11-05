@@ -269,12 +269,16 @@ export class ChatAgent {
 
         // Polish address patterns
         const patterns = [
-            // With ul./ulica prefix: "ul. Marszałkowska 1, Warszawa"
+            // With ul./ulica prefix and number: "ul. Marszałkowska 1, Warszawa"
             /(?:ul\.|ulica|aleja|al\.|plac|pl\.|os\.|osiedle)\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?(?:,?\s+\d{2}-\d{3})?\s*(?:,?\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)?/gi,
-            // Without prefix, with comma before city: "Kolumba 7, Wrocław"
+            // With prefix but NO number: "ul. Marszałkowska, Warszawa" or "wroclaw kolumba"
+            /(?:ul\.|ulica|aleja|al\.|plac|pl\.|os\.|osiedle)?\s*[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s*,?\s*(?:Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź|Katowice|Lublin|Bydgoszcz|Szczecin|warszawa|kraków|poznań|wrocław|gdańsk|łódź|katowice|lublin|bydgoszcz|szczecin)/gi,
+            // Without prefix, with number and comma: "Kolumba 7, Wrocław"
             /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?\s*,\s*(?:Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź|Katowice|Lublin|Bydgoszcz|Szczecin)/gi,
-            // Without prefix, without comma: "Kolumba 7 Wrocław"
-            /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?(?:\s+\d{2}-\d{3})?\s+(?:Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź|Katowice|Lublin|Bydgoszcz|Szczecin)/gi
+            // Without prefix, with number, without comma: "Kolumba 7 Wrocław"
+            /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*\s+\d+[a-z]?(?:\/\d+)?(?:\s+\d{2}-\d{3})?\s+(?:Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź|Katowice|Lublin|Bydgoszcz|Szczecin)/gi,
+            // Just city and street name (very permissive): "wroclaw kolumba" or "warszawa marszalkowska"
+            /(?:Warszawa|Kraków|Poznań|Wrocław|Gdańsk|Łódź|Katowice|Lublin|Bydgoszcz|Szczecin|warszawa|kraków|poznań|wrocław|gdańsk|łódź|katowice|lublin|bydgoszcz|szczecin)\s+[A-ZĄĆĘŁŃÓŚŹŻa-ząćęłńóśźż]+/gi
         ];
 
         for (const pattern of patterns) {
