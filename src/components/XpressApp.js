@@ -11,6 +11,7 @@ import { UIHelpers } from '../utils/UIHelpers.js';
 import { Validators } from '../utils/Validators.js';
 import { AppConfig } from '../config/app.config.js';
 import { ArrowBackground } from './ArrowBackground.js';
+import { OpenRouterClient } from '../ai/OpenRouterClient.js';
 import { ChatAgent } from '../ai/ChatAgent.js';
 import { ChatUI } from '../ai/ChatUI.js';
 
