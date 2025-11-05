@@ -35,23 +35,52 @@
         <!-- Main Form Page -->
         <div id="main-page" class="page active">
             <main class="main-content">
-                <!-- AI Chat Assistant Section (Prominent) -->
-                <section class="chat-hero-section">
-                    <div class="chat-hero-content">
-                        <div class="chat-hero-text">
-                            <h2>👋 Cześć! Jak dobrze się dziś masz?</h2>
-                            <p>Możesz wypełnić formularz poniżej lub po prostu napisz, co i gdzie chcesz przewieźć – wypełnię wszystko za Ciebie. <strong>Xpressowo!</strong> ⚡</p>
-                        </div>
-                        <button id="chat-hero-open" class="chat-hero-button">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <!-- AI-First Inline Chat Section -->
+                <section class="inline-chat-section">
+                    <div class="chat-header-inline">
+                        <h2>💬 Asystent Xpress.Delivery</h2>
+                        <span class="chat-status">● Online</span>
+                    </div>
+
+                    <div id="chat-messages" class="chat-messages-inline"></div>
+
+                    <div class="quick-prompts" id="quick-prompts">
+                        <button class="quick-prompt-btn" data-prompt="Chcę wysłać paczkę">
+                            📦 Wyślij paczkę
+                        </button>
+                        <button class="quick-prompt-btn" data-prompt="Sprawdź cenę przesyłki">
+                            💰 Sprawdź cenę
+                        </button>
+                        <button class="quick-prompt-btn" data-prompt="Śledź moją przesyłkę">
+                            📍 Śledź przesyłkę
+                        </button>
+                    </div>
+
+                    <div class="chat-input-wrapper-inline">
+                        <input
+                            id="chat-input"
+                            type="text"
+                            placeholder="Napisz co chcesz wysłać i gdzie..."
+                            autocomplete="off"
+                        />
+                        <button id="chat-send" aria-label="Wyślij wiadomość" class="chat-send-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path>
                             </svg>
-                            Napisz do mnie
                         </button>
                     </div>
                 </section>
 
-                <!-- Address Input -->
+                <!-- Traditional Form (Collapsible) -->
+                <div class="form-accordion">
+                    <button class="form-toggle-btn" id="form-toggle">
+                        📋 Wolę wypełnić formularz ręcznie
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-icon">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="form-accordion-content" id="form-accordion-content">
+                        <!-- Address Input -->
                 <section class="address-section">
                     <div class="address-inputs">
                         <div class="address-group">
@@ -251,26 +280,8 @@
                 <p id="loading-text">Obliczam cenę...</p>
             </div>
         </div>
-    </div>
-
-    <!-- Chat Widget -->
-    <div id="chat-widget" class="chat-widget">
-        <button id="chat-toggle" class="chat-toggle" aria-label="Open chat">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-        </button>
-        <div id="chat-modal" class="chat-modal" style="display: none;">
-            <div class="chat-header">
-                <h3>Xpress Assistant</h3>
-                <button id="chat-close" aria-label="Close chat">×</button>
-            </div>
-            <div id="chat-messages" class="chat-messages"></div>
-            <div class="chat-input-wrapper">
-                <input id="chat-input" type="text" placeholder="Wpisz wiadomość..." />
-                <button id="chat-send" aria-label="Send message">→</button>
-            </div>
-        </div>
+                    </div>
+                </div>
     </div>
 
     <!-- Google Maps not needed - using LocationIQ instead -->
