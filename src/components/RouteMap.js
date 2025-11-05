@@ -52,6 +52,11 @@ export class RouteMap {
             // Clear existing markers and route
             this.clearRoute();
 
+            console.log('📍 Drawing markers:', {
+                pickup: pickupCoords,
+                delivery: deliveryCoords
+            });
+
             // Add pickup marker (green)
             this.pickupMarker = L.marker([pickupCoords.lat, pickupCoords.lng], {
                 icon: L.divIcon({
