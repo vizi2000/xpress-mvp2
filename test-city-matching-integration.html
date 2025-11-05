@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - City Matching Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+        }
+        .log-info { color: #0066cc; }
+        .log-success { color: #009900; }
+        .log-warn { color: #ff9900; }
+        .log-error { color: #cc0000; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 City Matching Integration Test</h1>
+    <p>Test CityMatchingService integration with AddressForm</p>
+
+    <div class="test-section">
+        <h2>Address Form</h2>
+        <div class="form-group">
+            <label for="pickup-address">Adres odbioru:</label>
+            <input type="text" id="pickup-address" placeholder="np. ul. Długa 1, Gdańsk">
+        </div>
+
+        <div class="form-group">
+            <label for="delivery-address">Adres dostawy:</label>
+            <input type="text" id="delivery-address" placeholder="np. ul. 10 Lutego 1, Gdynia">
+        </div>
+
+        <div id="results-section" style="display: none;">
+            <p>Results section (hidden by default)</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Scenarios</h2>
+        <button onclick="testScenario1()">Test 1: Gdańsk → Gdynia (Valid)</button>
+        <button onclick="testScenario2()">Test 2: Gdańsk → Kraków (Invalid)</button>
+        <button onclick="testScenario3()">Test 3: Kraków → Kraków (Valid)</button>
+        <button onclick="testScenario4()">Test 4: Katowice → Sosnowiec (Valid)</button>
+        <button onclick="testScenario5()">Test 5: Reset Form</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Event Log</h2>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script type="module">
+        import { AddressForm } from './src/components/AddressForm.js';
+        import { GoogleMapsService } from './src/services/GoogleMapsService.js';
+
+        // Setup logging
+        const logContainer = document.getElementById('log');
+
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        console.log = (...args) => {
+            originalLog(...args);
+            const message = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+            if (message.includes('[AddressForm]') || message.includes('[CityMatching]')) {
+                addLog(message, 'info');
+            }
+        };
+
+        console.warn = (...args) => {
+            originalWarn(...args);
+            const message = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+            if (message.includes('[AddressForm]') || message.includes('[CityMatching]')) {
+                addLog(message, 'warn');
+            }
+        };
+
+        console.error = (...args) => {
+            originalError(...args);
+            const message = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+            if (message.includes('[AddressForm]') || message.includes('[CityMatching]')) {
+                addLog(message, 'error');
+            }
+        };
+
+        // Initialize services
+        addLog('Initializing services...', 'info');
+
+        const googleMapsService = new GoogleMapsService();
+
+        const addressForm = new AddressForm(
+            googleMapsService,
+            (pickup, delivery) => {
+                addLog(`Address change callback: ${pickup} → ${delivery}`, 'success');
+            }
+        );
+
+        // Make addressForm available globally for test functions
+        window.addressForm = addressForm;
+
+        addLog('Services initialized successfully', 'success');
+
+        // Test scenario functions
+        window.testScenario1 = () => {
+            addLog('=== TEST SCENARIO 1: Gdańsk → Gdynia (Valid) ===', 'info');
+            addressForm.setAddresses('ul. Długa 1, Gdańsk', '');
+            setTimeout(() => {
+                document.getElementById('delivery-address').value = 'ul. 10 Lutego 1, Gdynia';
+                addressForm.handleAddressChange();
+            }, 1000);
+        };
+
+        window.testScenario2 = () => {
+            addLog('=== TEST SCENARIO 2: Gdańsk → Kraków (Invalid) ===', 'info');
+            addressForm.setAddresses('ul. Długa 1, Gdańsk', '');
+            setTimeout(() => {
+                document.getElementById('delivery-address').value = 'ul. Floriańska 1, Kraków';
+                addressForm.handleAddressChange();
+            }, 1000);
+        };
+
+        window.testScenario3 = () => {
+            addLog('=== TEST SCENARIO 3: Kraków → Kraków (Valid) ===', 'info');
+            addressForm.setAddresses('ul. Floriańska 1, Kraków', 'ul. Starowiślna 10, Kraków');
+        };
+
+        window.testScenario4 = () => {
+            addLog('=== TEST SCENARIO 4: Katowice → Sosnowiec (Valid) ===', 'info');
+            addressForm.setAddresses('ul. Mariacka 1, Katowice', '');
+            setTimeout(() => {
+                document.getElementById('delivery-address').value = 'ul. 3 Maja 1, Sosnowiec';
+                addressForm.handleAddressChange();
+            }, 1000);
+        };
+
+        window.testScenario5 = () => {
+            addLog('=== TEST SCENARIO 5: Reset Form ===', 'info');
+            addressForm.reset();
+            addressForm.clearAddresses();
+        };
+
+        window.clearLog = () => {
+            logContainer.innerHTML = '';
+            addLog('Log cleared', 'info');
+        };
+    </script>
+</body>
+</html>

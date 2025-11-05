@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validators City Logic - Unit Tests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 20px;
+            margin-top: 10px;
+        }
+
+        #test-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: transform 0.2s;
+        }
+
+        .stat:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-pass {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .stat-fail {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #test-results {
+            margin-top: 20px;
+        }
+
+        .test-category {
+            margin-bottom: 30px;
+        }
+
+        .test-category-title {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            font-size: 18px;
+            color: #667eea;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .test-category-results {
+            background: white;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .test-result {
+            padding: 15px 20px;
+            margin: 0;
+            border-left: 4px solid #ccc;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .test-result:hover {
+            background: #f8f9fa;
+        }
+
+        .test-result:last-child {
+            border-bottom: none;
+        }
+
+        .test-result.test-pass {
+            border-left-color: #28a745;
+        }
+
+        .test-result.test-fail {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .test-status {
+            font-size: 20px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .test-content {
+            flex: 1;
+        }
+
+        .test-name {
+            font-weight: 500;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .test-error {
+            margin-top: 8px;
+            padding: 10px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            border: 1px solid #f5c6cb;
+        }
+
+        .test-duration {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat {
+                padding: 15px 10px;
+            }
+
+            .stat-value {
+                font-size: 28px;
+            }
+
+            .test-result {
+                padding: 12px 15px;
+            }
+
+            .test-category-title {
+                font-size: 16px;
+                padding: 12px 15px;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Validators.js - City Logic Unit Tests</h1>
+    <div class="loading">Running tests</div>
+    <div id="test-summary"></div>
+    <div id="test-results"></div>
+    <div class="footer">
+        Created by The Collective Borg.tools |
+        <a href="../../src/utils/Validators.js" target="_blank">View Source</a>
+    </div>
+
+    <script type="module">
+        import { Validators } from '../../src/utils/Validators.js';
+        import { ALL_CITY_IDS, CITY_GROUPS } from '../../src/config/cities.config.js';
+
+        /**
+         * Simple Test Runner for Browser-Based Testing
+         */
+        class TestRunner {
+            constructor() {
+                this.tests = [];
+                this.categories = new Map();
+                this.passed = 0;
+                this.failed = 0;
+                this.startTime = null;
+                this.currentCategory = null;
+            }
+
+            category(name) {
+                this.currentCategory = name;
+                if (!this.categories.has(name)) {
+                    this.categories.set(name, []);
+                }
+            }
+
+            test(name, testFunction) {
+                const test = {
+                    name,
+                    testFunction,
+                    category: this.currentCategory || 'Uncategorized'
+                };
+                this.tests.push(test);
+
+                if (this.currentCategory) {
+                    this.categories.get(this.currentCategory).push(test);
+                }
+            }
+
+            async run() {
+                this.startTime = performance.now();
+                console.log('🚀 Running Validators City Logic Tests...\n');
+                console.log('='.repeat(60));
+
+                document.querySelector('.loading').remove();
+
+                for (const test of this.tests) {
+                    const testStartTime = performance.now();
+                    try {
+                        await test.testFunction();
+                        const duration = performance.now() - testStartTime;
+                        this.passed++;
+                        this.logPass(test.name, test.category, duration);
+                    } catch (error) {
+                        const duration = performance.now() - testStartTime;
+                        this.failed++;
+                        this.logFail(test.name, test.category, error.message, duration);
+                    }
+                }
+
+                this.printSummary();
+            }
+
+            logPass(name, category, duration) {
+                console.log(`✅ PASS: ${name}`);
+                this.appendResult('pass', name, category, '', duration);
+            }
+
+            logFail(name, category, message, duration) {
+                console.error(`❌ FAIL: ${name}\n   ${message}`);
+                this.appendResult('fail', name, category, message, duration);
+            }
+
+            appendResult(status, name, category, message = '', duration = 0) {
+                let categoryDiv = document.querySelector(`[data-category="${category}"]`);
+
+                if (!categoryDiv) {
+                    const categoryContainer = document.createElement('div');
+                    categoryContainer.className = 'test-category';
+                    categoryContainer.innerHTML = `
+                        <div class="test-category-title">${category}</div>
+                        <div class="test-category-results" data-category="${category}"></div>
+                    `;
+                    document.getElementById('test-results').appendChild(categoryContainer);
+                    categoryDiv = categoryContainer.querySelector('.test-category-results');
+                }
+
+                const testDiv = document.createElement('div');
+                testDiv.className = `test-result test-${status}`;
+                testDiv.innerHTML = `
+                    <span class="test-status">${status === 'pass' ? '✅' : '❌'}</span>
+                    <div class="test-content">
+                        <div class="test-name">${name}</div>
+                        ${message ? `<div class="test-error">${this.escapeHtml(message)}</div>` : ''}
+                        <div class="test-duration">${duration.toFixed(2)}ms</div>
+                    </div>
+                `;
+                categoryDiv.appendChild(testDiv);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            printSummary() {
+                const total = this.passed + this.failed;
+                const percentage = ((this.passed / total) * 100).toFixed(1);
+                const totalDuration = (performance.now() - this.startTime).toFixed(2);
+
+                const summaryDiv = document.getElementById('test-summary');
+                summaryDiv.innerHTML = `
+                    <h2>Test Summary</h2>
+                    <div class="summary-stats">
+                        <div class="stat">
+                            <div class="stat-value">${total}</div>
+                            <div class="stat-label">Total Tests</div>
+                        </div>
+                        <div class="stat stat-pass">
+                            <div class="stat-value">${this.passed}</div>
+                            <div class="stat-label">Passed</div>
+                        </div>
+                        <div class="stat stat-fail">
+                            <div class="stat-value">${this.failed}</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${percentage}%</div>
+                            <div class="stat-label">Pass Rate</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${totalDuration}</div>
+                            <div class="stat-label">Duration (ms)</div>
+                        </div>
+                    </div>
+                `;
+
+                console.log('='.repeat(60));
+                console.log(`\n📊 SUMMARY:`);
+                console.log(`   Total:     ${total}`);
+                console.log(`   Passed:    ${this.passed} ✅`);
+                console.log(`   Failed:    ${this.failed} ❌`);
+                console.log(`   Pass Rate: ${percentage}%`);
+                console.log(`   Duration:  ${totalDuration}ms`);
+                console.log('\n' + '='.repeat(60));
+
+                if (this.failed === 0) {
+                    console.log('🎉 ALL TESTS PASSED!');
+                } else {
+                    console.warn(`⚠️  ${this.failed} test(s) failed. Please review above.`);
+                }
+            }
+        }
+
+        /**
+         * Assertion helpers
+         */
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message || 'Assertion failed');
+            }
+        }
+
+        function assertEqual(actual, expected, message) {
+            if (actual !== expected) {
+                throw new Error(
+                    message || `Expected "${expected}", but got "${actual}"`
+                );
+            }
+        }
+
+        function assertNotEqual(actual, expected, message) {
+            if (actual === expected) {
+                throw new Error(
+                    message || `Expected value to not equal "${expected}"`
+                );
+            }
+        }
+
+        function assertNull(value, message) {
+            if (value !== null) {
+                throw new Error(
+                    message || `Expected null, but got "${value}"`
+                );
+            }
+        }
+
+        function assertNotNull(value, message) {
+            if (value === null) {
+                throw new Error(
+                    message || 'Expected non-null value, but got null'
+                );
+            }
+        }
+
+        function assertTrue(value, message) {
+            if (value !== true) {
+                throw new Error(
+                    message || `Expected true, but got "${value}"`
+                );
+            }
+        }
+
+        function assertFalse(value, message) {
+            if (value !== false) {
+                throw new Error(
+                    message || `Expected false, but got "${value}"`
+                );
+            }
+        }
+
+        /**
+         * TEST SUITE: Validators City Logic
+         */
+        const runner = new TestRunner();
+
+        // =================================================================
+        // CATEGORY A: extractCityFromAddress() - 30+ tests
+        // =================================================================
+        runner.category('A. extractCityFromAddress() - Address Parsing');
+
+        runner.test('Standard format: "ul. Długa 1, Gdańsk"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, Gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Reversed format: "Gdańsk, ul. Długa 1"', () => {
+            const result = Validators.extractCityFromAddress('Gdańsk, ul. Długa 1');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('With postal code: "ul. Długa 1, 80-001 Gdańsk"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, 80-001 Gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Postal code first: "80-001 Gdańsk, ul. Długa 1"', () => {
+            const result = Validators.extractCityFromAddress('80-001 Gdańsk, ul. Długa 1');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('No street prefix: "Długa 1, Gdańsk"', () => {
+            const result = Validators.extractCityFromAddress('Długa 1, Gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Uppercase city: "ul. Długa 1, GDAŃSK"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, GDAŃSK');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Mixed case: "ul. Długa 1, GdAńSk"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, GdAńSk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Extra spaces: "ul. Długa 1,    Gdańsk   "', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1,    Gdańsk   ');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Multiple Polish chars: "ul. Łąkowa 1, Łódź"', () => {
+            const result = Validators.extractCityFromAddress('ul. Łąkowa 1, Łódź');
+            assertEqual(result, 'lodz');
+        });
+
+        runner.test('With voivodeship: "ul. Długa 1, Gdańsk, pomorskie"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, Gdańsk, pomorskie');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('With country: "ul. Długa 1, Gdańsk, Polska"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, Gdańsk, Polska');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Complex format: "ul. Długa 1, 80-001 Gdańsk, pomorskie, Polska"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, 80-001 Gdańsk, pomorskie, Polska');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Special street name: "al. 3 Maja 1, Kraków"', () => {
+            const result = Validators.extractCityFromAddress('al. 3 Maja 1, Kraków');
+            assertEqual(result, 'krakow');
+        });
+
+        runner.test('Apartment number: "ul. Długa 1/5, Gdańsk"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1/5, Gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Multiple commas: "Rynek Główny, Stare Miasto, Kraków"', () => {
+            const result = Validators.extractCityFromAddress('Rynek Główny, Stare Miasto, Kraków');
+            assertEqual(result, 'krakow');
+        });
+
+        runner.test('No city present: "ul. Długa 1"', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1');
+            assertNull(result);
+        });
+
+        runner.test('Empty string', () => {
+            const result = Validators.extractCityFromAddress('');
+            assertNull(result);
+        });
+
+        runner.test('Null input', () => {
+            const result = Validators.extractCityFromAddress(null);
+            assertNull(result);
+        });
+
+        runner.test('Undefined input', () => {
+            const result = Validators.extractCityFromAddress(undefined);
+            assertNull(result);
+        });
+
+        runner.test('Only whitespace', () => {
+            const result = Validators.extractCityFromAddress('   ');
+            assertNull(result);
+        });
+
+        // Test all 17 supported cities
+        runner.test('Supported city: Gdańsk', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, Gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Supported city: Gdynia', () => {
+            const result = Validators.extractCityFromAddress('ul. Świętojańska 1, Gdynia');
+            assertEqual(result, 'gdynia');
+        });
+
+        runner.test('Supported city: Sopot', () => {
+            const result = Validators.extractCityFromAddress('ul. Bohaterów Monte Cassino 1, Sopot');
+            assertEqual(result, 'sopot');
+        });
+
+        runner.test('Supported city: Kraków', () => {
+            const result = Validators.extractCityFromAddress('ul. Floriańska 1, Kraków');
+            assertEqual(result, 'krakow');
+        });
+
+        runner.test('Supported city: Wrocław', () => {
+            const result = Validators.extractCityFromAddress('ul. Świdnicka 1, Wrocław');
+            assertEqual(result, 'wroclaw');
+        });
+
+        runner.test('Supported city: Łódź', () => {
+            const result = Validators.extractCityFromAddress('ul. Piotrkowska 1, Łódź');
+            assertEqual(result, 'lodz');
+        });
+
+        runner.test('Supported city: Poznań', () => {
+            const result = Validators.extractCityFromAddress('ul. Święty Marcin 1, Poznań');
+            assertEqual(result, 'poznan');
+        });
+
+        runner.test('Supported city: Szczecin', () => {
+            const result = Validators.extractCityFromAddress('al. Niepodległości 1, Szczecin');
+            assertEqual(result, 'szczecin');
+        });
+
+        runner.test('Supported city: Rzeszów', () => {
+            const result = Validators.extractCityFromAddress('ul. 3 Maja 1, Rzeszów');
+            assertEqual(result, 'rzeszow');
+        });
+
+        runner.test('Supported city: Radom', () => {
+            const result = Validators.extractCityFromAddress('ul. Żeromskiego 1, Radom');
+            assertEqual(result, 'radom');
+        });
+
+        runner.test('Supported city: Katowice', () => {
+            const result = Validators.extractCityFromAddress('ul. Mariacka 1, Katowice');
+            assertEqual(result, 'katowice');
+        });
+
+        runner.test('Supported city: Sosnowiec', () => {
+            const result = Validators.extractCityFromAddress('ul. Modrzejowska 1, Sosnowiec');
+            assertEqual(result, 'sosnowiec');
+        });
+
+        runner.test('Supported city: Bytom', () => {
+            const result = Validators.extractCityFromAddress('ul. Strzelców Bytomskich 1, Bytom');
+            assertEqual(result, 'bytom');
+        });
+
+        runner.test('Supported city: Chorzów', () => {
+            const result = Validators.extractCityFromAddress('ul. Wolności 1, Chorzów');
+            assertEqual(result, 'chorzow');
+        });
+
+        runner.test('Supported city: Zabrze', () => {
+            const result = Validators.extractCityFromAddress('ul. Wolności 1, Zabrze');
+            assertEqual(result, 'zabrze');
+        });
+
+        runner.test('Supported city: Gliwice', () => {
+            const result = Validators.extractCityFromAddress('ul. Zwycięstwa 1, Gliwice');
+            assertEqual(result, 'gliwice');
+        });
+
+        runner.test('Supported city: Tychy', () => {
+            const result = Validators.extractCityFromAddress('ul. Niepodległości 1, Tychy');
+            assertEqual(result, 'tychy');
+        });
+
+        runner.test('Unsupported city: Warszawa', () => {
+            const result = Validators.extractCityFromAddress('ul. Marszałkowska 1, Warszawa');
+            assertEqual(result, 'warszawa'); // Should extract, but not in supported list
+        });
+
+        runner.test('Unsupported city: Białystok', () => {
+            const result = Validators.extractCityFromAddress('ul. Lipowa 1, Białystok');
+            assertEqual(result, 'bialystok');
+        });
+
+        // =================================================================
+        // CATEGORY B: normalizeCityName() - 15+ tests
+        // =================================================================
+        runner.category('B. normalizeCityName() - Polish Character Normalization');
+
+        runner.test('Standard case: "Gdańsk" → "gdansk"', () => {
+            const result = Validators.normalizeCityName('Gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Uppercase: "GDAŃSK" → "gdansk"', () => {
+            const result = Validators.normalizeCityName('GDAŃSK');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Lowercase: "gdańsk" → "gdansk"', () => {
+            const result = Validators.normalizeCityName('gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Łódź → "lodz"', () => {
+            const result = Validators.normalizeCityName('Łódź');
+            assertEqual(result, 'lodz');
+        });
+
+        runner.test('ŁÓDŹ → "lodz"', () => {
+            const result = Validators.normalizeCityName('ŁÓDŹ');
+            assertEqual(result, 'lodz');
+        });
+
+        runner.test('Kraków → "krakow"', () => {
+            const result = Validators.normalizeCityName('Kraków');
+            assertEqual(result, 'krakow');
+        });
+
+        runner.test('Wrocław → "wroclaw"', () => {
+            const result = Validators.normalizeCityName('Wrocław');
+            assertEqual(result, 'wroclaw');
+        });
+
+        runner.test('Białystok → "bialystok"', () => {
+            const result = Validators.normalizeCityName('Białystok');
+            assertEqual(result, 'bialystok');
+        });
+
+        runner.test('With spaces: "  Gdańsk  " → "gdansk"', () => {
+            const result = Validators.normalizeCityName('  Gdańsk  ');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('All Polish chars: "Częstochowa" → "czestochowa"', () => {
+            const result = Validators.normalizeCityName('Częstochowa');
+            assertEqual(result, 'czestochowa');
+        });
+
+        runner.test('Empty string → ""', () => {
+            const result = Validators.normalizeCityName('');
+            assertEqual(result, '');
+        });
+
+        runner.test('Null input → ""', () => {
+            const result = Validators.normalizeCityName(null);
+            assertEqual(result, '');
+        });
+
+        runner.test('Undefined input → ""', () => {
+            const result = Validators.normalizeCityName(undefined);
+            assertEqual(result, '');
+        });
+
+        runner.test('Poznań → "poznan"', () => {
+            const result = Validators.normalizeCityName('Poznań');
+            assertEqual(result, 'poznan');
+        });
+
+        runner.test('Chorzów → "chorzow"', () => {
+            const result = Validators.normalizeCityName('Chorzów');
+            assertEqual(result, 'chorzow');
+        });
+
+        runner.test('Mixed case complex: "ŁóDź" → "lodz"', () => {
+            const result = Validators.normalizeCityName('ŁóDź');
+            assertEqual(result, 'lodz');
+        });
+
+        runner.test('Multiple words: "Bielsko-Biała" → "bielsko-biala"', () => {
+            const result = Validators.normalizeCityName('Bielsko-Biała');
+            assertEqual(result, 'bielsko-biala');
+        });
+
+        // =================================================================
+        // CATEGORY C: isSupportedCity() - 25+ tests
+        // =================================================================
+        runner.category('C. isSupportedCity() - City Support Validation');
+
+        runner.test('Gdańsk (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Długa 1, Gdańsk', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Gdynia (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Świętojańska 1, Gdynia', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Sopot (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Monte Cassino 1, Sopot', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Kraków (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Floriańska 1, Kraków', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Wrocław (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Świdnicka 1, Wrocław', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Łódź (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Piotrkowska 1, Łódź', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Poznań (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Święty Marcin 1, Poznań', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Szczecin (supported) → true', () => {
+            const result = Validators.isSupportedCity('al. Niepodległości 1, Szczecin', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Rzeszów (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. 3 Maja 1, Rzeszów', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Radom (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Żeromskiego 1, Radom', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Katowice (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Mariacka 1, Katowice', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Sosnowiec (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Modrzejowska 1, Sosnowiec', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Bytom (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Strzelców Bytomskich 1, Bytom', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Chorzów (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Wolności 1, Chorzów', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Zabrze (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Wolności 1, Zabrze', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Gliwice (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Zwycięstwa 1, Gliwice', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Tychy (supported) → true', () => {
+            const result = Validators.isSupportedCity('ul. Niepodległości 1, Tychy', ALL_CITY_IDS);
+            assertTrue(result);
+        });
+
+        runner.test('Warszawa (not supported) → false', () => {
+            const result = Validators.isSupportedCity('ul. Marszałkowska 1, Warszawa', ALL_CITY_IDS);
+            assertFalse(result);
+        });
+
+        runner.test('Białystok (not supported) → false', () => {
+            const result = Validators.isSupportedCity('ul. Lipowa 1, Białystok', ALL_CITY_IDS);
+            assertFalse(result);
+        });
+
+        runner.test('Lublin (not supported) → false', () => {
+            const result = Validators.isSupportedCity('ul. Krakowskie Przedmieście 1, Lublin', ALL_CITY_IDS);
+            assertFalse(result);
+        });
+
+        runner.test('Invalid address (no city) → false', () => {
+            const result = Validators.isSupportedCity('ul. Długa 1', ALL_CITY_IDS);
+            assertFalse(result);
+        });
+
+        runner.test('Empty string → false', () => {
+            const result = Validators.isSupportedCity('', ALL_CITY_IDS);
+            assertFalse(result);
+        });
+
+        runner.test('Null address → false', () => {
+            const result = Validators.isSupportedCity(null, ALL_CITY_IDS);
+            assertFalse(result);
+        });
+
+        runner.test('No supported cities provided → false', () => {
+            const result = Validators.isSupportedCity('ul. Długa 1, Gdańsk', null);
+            assertFalse(result);
+        });
+
+        runner.test('Empty supported cities array → false', () => {
+            const result = Validators.isSupportedCity('ul. Długa 1, Gdańsk', []);
+            assertFalse(result);
+        });
+
+        // =================================================================
+        // CATEGORY D: areCitiesCompatible() - 20+ tests
+        // =================================================================
+        runner.category('D. areCitiesCompatible() - Cross-City Delivery Rules');
+
+        runner.test('Same city: Gdańsk + Gdańsk → true', () => {
+            const result = Validators.areCitiesCompatible('gdansk', 'gdansk', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Trójmiasto: Gdańsk + Gdynia → true', () => {
+            const result = Validators.areCitiesCompatible('gdansk', 'gdynia', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Trójmiasto: Gdańsk + Sopot → true', () => {
+            const result = Validators.areCitiesCompatible('gdansk', 'sopot', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Trójmiasto: Gdynia + Sopot → true', () => {
+            const result = Validators.areCitiesCompatible('gdynia', 'sopot', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Trójmiasto: Sopot + Gdynia (reversed) → true', () => {
+            const result = Validators.areCitiesCompatible('sopot', 'gdynia', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Metro: Katowice + Sosnowiec → true', () => {
+            const result = Validators.areCitiesCompatible('katowice', 'sosnowiec', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Metro: Katowice + Gliwice → true', () => {
+            const result = Validators.areCitiesCompatible('katowice', 'gliwice', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Metro: Sosnowiec + Bytom → true', () => {
+            const result = Validators.areCitiesCompatible('sosnowiec', 'bytom', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Metro: Chorzow + Zabrze → true', () => {
+            const result = Validators.areCitiesCompatible('chorzow', 'zabrze', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Metro: Gliwice + Tychy → true', () => {
+            const result = Validators.areCitiesCompatible('gliwice', 'tychy', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Same city: Kraków + Kraków → true', () => {
+            const result = Validators.areCitiesCompatible('krakow', 'krakow', CITY_GROUPS);
+            assertTrue(result);
+        });
+
+        runner.test('Different groups: Kraków + Gdańsk → false', () => {
+            const result = Validators.areCitiesCompatible('krakow', 'gdansk', CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        runner.test('Different groups: Kraków + Wrocław → false', () => {
+            const result = Validators.areCitiesCompatible('krakow', 'wroclaw', CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        runner.test('Different groups: Gdańsk + Katowice → false', () => {
+            const result = Validators.areCitiesCompatible('gdansk', 'katowice', CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        runner.test('Different groups: Wrocław + Łódź → false', () => {
+            const result = Validators.areCitiesCompatible('wroclaw', 'lodz', CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        runner.test('Null pickup city → false', () => {
+            const result = Validators.areCitiesCompatible(null, 'gdansk', CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        runner.test('Null delivery city → false', () => {
+            const result = Validators.areCitiesCompatible('gdansk', null, CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        runner.test('Both cities null → false', () => {
+            const result = Validators.areCitiesCompatible(null, null, CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        runner.test('No city groups config → false', () => {
+            const result = Validators.areCitiesCompatible('gdansk', 'gdynia', null);
+            assertFalse(result);
+        });
+
+        runner.test('Empty city groups config → false', () => {
+            const result = Validators.areCitiesCompatible('gdansk', 'gdynia', {});
+            assertFalse(result);
+        });
+
+        runner.test('Invalid city ID → false', () => {
+            const result = Validators.areCitiesCompatible('invalid', 'gdansk', CITY_GROUPS);
+            assertFalse(result);
+        });
+
+        // =================================================================
+        // CATEGORY E: Edge Cases and Stress Tests
+        // =================================================================
+        runner.category('E. Edge Cases & Stress Tests');
+
+        runner.test('Edge: Very long address', () => {
+            const longAddress = 'ul. Bardzo Długa Nazwa Ulicy Która Ma Dużo Słów 123/456, 80-001 Gdańsk, pomorskie, Polska, Europa';
+            const result = Validators.extractCityFromAddress(longAddress);
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Edge: Address with special characters', () => {
+            const result = Validators.extractCityFromAddress('ul. św. Mikołaja 1, Kraków');
+            assertEqual(result, 'krakow');
+        });
+
+        runner.test('Edge: Address with numbers in street name', () => {
+            const result = Validators.extractCityFromAddress('al. 3 Maja 123, Kraków');
+            assertEqual(result, 'krakow');
+        });
+
+        runner.test('Edge: Multiple postal codes', () => {
+            const result = Validators.extractCityFromAddress('80-001 Gdańsk, 80-002 ul. Długa');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Edge: City name at the very end', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1, 80-001, Gdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Edge: Address with tabs and newlines', () => {
+            const result = Validators.extractCityFromAddress('ul. Długa 1,\t\nGdańsk');
+            assertEqual(result, 'gdansk');
+        });
+
+        runner.test('Stress: normalizeCityName with numbers', () => {
+            const result = Validators.normalizeCityName('City123');
+            assertEqual(result, 'city123');
+        });
+
+        runner.test('Stress: normalizeCityName with special chars', () => {
+            const result = Validators.normalizeCityName('Gdańsk-Wrzeszcz');
+            assertEqual(result, 'gdansk-wrzeszcz');
+        });
+
+        runner.test('Stress: isSupportedCity with malformed array', () => {
+            const result = Validators.isSupportedCity('ul. Długa 1, Gdańsk', 'not-an-array');
+            assertFalse(result);
+        });
+
+        runner.test('Stress: areCitiesCompatible with same city uppercase', () => {
+            const result = Validators.areCitiesCompatible('GDANSK', 'gdansk', CITY_GROUPS);
+            assertFalse(result); // Should be false because GDANSK != gdansk (exact match required)
+        });
+
+        // Run all tests
+        runner.run();
+    </script>
+</body>
+</html>

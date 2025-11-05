@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityMatchingService Test Suite</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            border-left: 4px solid #2196F3;
+            padding-left: 15px;
+        }
+        .test {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test h3 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        .result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .summary {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .summary h2 {
+            margin-top: 0;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .stat {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .stat-error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .stat-total {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 CityMatchingService Test Suite</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        import { CityMatchingService } from './src/services/CityMatchingService.js';
+
+        const output = document.getElementById('output');
+        let testsPassed = 0;
+        let testsFailed = 0;
+        let testsTotal = 0;
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            output.appendChild(div);
+        }
+
+        function test(name, fn) {
+            testsTotal++;
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test';
+            testDiv.innerHTML = `<h3>Test ${testsTotal}: ${name}</h3>`;
+            output.appendChild(testDiv);
+
+            try {
+                fn(testDiv);
+                testsPassed++;
+                log('✅ PASSED', 'success');
+            } catch (error) {
+                testsFailed++;
+                log(`❌ FAILED: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message || 'Assertion failed');
+            }
+        }
+
+        function assertEquals(actual, expected, message) {
+            const actualStr = JSON.stringify(actual);
+            const expectedStr = JSON.stringify(expected);
+            if (actualStr !== expectedStr) {
+                throw new Error(`${message}\nExpected: ${expectedStr}\nActual: ${actualStr}`);
+            }
+        }
+
+        // ===== START TESTS =====
+
+        log('='.repeat(80), 'info');
+        log('GRUPA 3A - CityMatchingService Test Suite', 'info');
+        log('='.repeat(80), 'info');
+
+        // Test 1: Trójmiasto matching
+        test('Trójmiasto matching - suggestDeliveryCities("gdansk")', (testDiv) => {
+            const service = new CityMatchingService();
+            const cities = service.suggestDeliveryCities('gdansk');
+
+            log(`Input: suggestDeliveryCities('gdansk')`, 'info');
+            log(`Output: ${JSON.stringify(cities)}`, 'info');
+
+            assertEquals(cities.sort(), ['gdansk', 'gdynia', 'sopot'].sort(), 'Should return Trójmiasto cities');
+            log('Expected: ["gdansk", "gdynia", "sopot"] ✓', 'success');
+        });
+
+        // Test 2: Single city
+        test('Single city - suggestDeliveryCities("krakow")', (testDiv) => {
+            const service = new CityMatchingService();
+            const cities = service.suggestDeliveryCities('krakow');
+
+            log(`Input: suggestDeliveryCities('krakow')`, 'info');
+            log(`Output: ${JSON.stringify(cities)}`, 'info');
+
+            assertEquals(cities, ['krakow'], 'Should return only Kraków');
+            log('Expected: ["krakow"] ✓', 'success');
+        });
+
+        // Test 3: Katowice Metro
+        test('Katowice Metro - suggestDeliveryCities("katowice")', (testDiv) => {
+            const service = new CityMatchingService();
+            const cities = service.suggestDeliveryCities('katowice');
+
+            log(`Input: suggestDeliveryCities('katowice')`, 'info');
+            log(`Output: ${JSON.stringify(cities)}`, 'info');
+
+            const expectedCities = ['katowice', 'sosnowiec', 'bytom', 'chorzow', 'zabrze', 'gliwice', 'tychy'];
+            assertEquals(cities.sort(), expectedCities.sort(), 'Should return all Katowice Metro cities');
+            log(`Expected: ${JSON.stringify(expectedCities)} ✓`, 'success');
+        });
+
+        // Test 4: Null city (all cities)
+        test('Null pickup city - suggestDeliveryCities(null)', (testDiv) => {
+            const service = new CityMatchingService();
+            const cities = service.suggestDeliveryCities(null);
+
+            log(`Input: suggestDeliveryCities(null)`, 'info');
+            log(`Output: ${cities.length} cities`, 'info');
+
+            assert(cities.length === 17, 'Should return all 17 supported cities');
+            log('Expected: 17 cities (all supported) ✓', 'success');
+        });
+
+        // Test 5: City pair validation - Valid Trójmiasto
+        test('City pair validation - validateCityPair("gdansk", "gdynia")', (testDiv) => {
+            const service = new CityMatchingService();
+            const result = service.validateCityPair('gdansk', 'gdynia');
+
+            log(`Input: validateCityPair('gdansk', 'gdynia')`, 'info');
+            log(`Output:\n${JSON.stringify(result, null, 2)}`, 'info');
+
+            assert(result.valid === true, 'Should be valid');
+            assert(result.message.includes('Trójmiasto'), 'Message should mention Trójmiasto');
+            assert(result.pickupCity.id === 'gdansk', 'Pickup city should be Gdańsk');
+            assert(result.deliveryCity.id === 'gdynia', 'Delivery city should be Gdynia');
+            log('Expected: { valid: true, message: "✅ Dostawa możliwa w obrębie Trójmiasta" } ✓', 'success');
+        });
+
+        // Test 6: City pair validation - Invalid cross-city
+        test('City pair validation - validateCityPair("krakow", "gdansk")', (testDiv) => {
+            const service = new CityMatchingService();
+            const result = service.validateCityPair('krakow', 'gdansk');
+
+            log(`Input: validateCityPair('krakow', 'gdansk')`, 'info');
+            log(`Output:\n${JSON.stringify(result, null, 2)}`, 'info');
+
+            assert(result.valid === false, 'Should be invalid');
+            assert(result.message.includes('❌'), 'Message should show error');
+            assert(result.message.includes('Krakow') || result.message.includes('Kraków'), 'Message should mention Kraków');
+            log('Expected: { valid: false, message: "❌ Dostawa z Krakowa możliwa tylko w obrębie Krakowa" } ✓', 'success');
+        });
+
+        // Test 7: City pair validation - Valid Katowice Metro
+        test('City pair validation - validateCityPair("katowice", "sosnowiec")', (testDiv) => {
+            const service = new CityMatchingService();
+            const result = service.validateCityPair('katowice', 'sosnowiec');
+
+            log(`Input: validateCityPair('katowice', 'sosnowiec')`, 'info');
+            log(`Output:\n${JSON.stringify(result, null, 2)}`, 'info');
+
+            assert(result.valid === true, 'Should be valid');
+            assert(result.message.includes('Aglomeracji Katowickiej'), 'Message should mention Katowice Metro');
+            log('Expected: { valid: true, message: "✅ Dostawa możliwa w obrębie Aglomeracji Katowickiej" } ✓', 'success');
+        });
+
+        // Test 8: Event system
+        test('Event system - pickupCityChanged event', (testDiv) => {
+            const service = new CityMatchingService();
+            let eventFired = false;
+            let eventData = null;
+
+            service.addEventListener('pickupCityChanged', (data) => {
+                eventFired = true;
+                eventData = data;
+                log(`Event received: pickupCityChanged`, 'success');
+                log(`Event data:\n${JSON.stringify(data, null, 2)}`, 'info');
+            });
+
+            service.setPickupCity('gdansk');
+
+            assert(eventFired === true, 'Event should be fired');
+            assert(eventData.cityId === 'gdansk', 'Event should contain correct cityId');
+            assert(Array.isArray(eventData.allowedDeliveryCities), 'Event should contain allowedDeliveryCities array');
+            assert(eventData.allowedDeliveryCities.includes('gdansk'), 'Allowed cities should include Gdańsk');
+            assert(eventData.allowedDeliveryCities.includes('gdynia'), 'Allowed cities should include Gdynia');
+            assert(eventData.allowedDeliveryCities.includes('sopot'), 'Allowed cities should include Sopot');
+            log('Expected: Event fired with { cityId: "gdansk", allowedDeliveryCities: [...] } ✓', 'success');
+        });
+
+        // Test 9: State management
+        test('State management - getCurrentState()', (testDiv) => {
+            const service = new CityMatchingService();
+
+            log('Step 1: Initial state', 'info');
+            let state = service.getCurrentState();
+            log(`State: ${JSON.stringify(state, null, 2)}`, 'info');
+            assert(state.pickupCity === null, 'Initial pickup should be null');
+            assert(state.deliveryCity === null, 'Initial delivery should be null');
+
+            log('\nStep 2: Set pickup city to "gdansk"', 'info');
+            service.setPickupCity('gdansk');
+            state = service.getCurrentState();
+            log(`State: ${JSON.stringify(state, null, 2)}`, 'info');
+            assert(state.pickupCity === 'gdansk', 'Pickup should be Gdańsk');
+
+            log('\nStep 3: Set delivery city to "gdynia"', 'info');
+            service.setDeliveryCity('gdynia');
+            state = service.getCurrentState();
+            log(`State: ${JSON.stringify(state, null, 2)}`, 'info');
+            assert(state.pickupCity === 'gdansk', 'Pickup should still be Gdańsk');
+            assert(state.deliveryCity === 'gdynia', 'Delivery should be Gdynia');
+            assert(state.isValid === true, 'State should be valid');
+            assert(state.validation !== null, 'Validation should be present');
+            assert(state.validation.valid === true, 'Validation should be valid');
+
+            log('Expected: State correctly tracks pickup, delivery, and validation ✓', 'success');
+        });
+
+        // Test 10: Reset functionality
+        test('Reset functionality - reset()', (testDiv) => {
+            const service = new CityMatchingService();
+            let resetEventFired = false;
+
+            service.addEventListener('reset', () => {
+                resetEventFired = true;
+                log('Reset event fired ✓', 'success');
+            });
+
+            log('Step 1: Set pickup and delivery cities', 'info');
+            service.setPickupCity('gdansk');
+            service.setDeliveryCity('gdynia');
+
+            let state = service.getCurrentState();
+            assert(state.pickupCity === 'gdansk', 'Pickup should be set');
+            assert(state.deliveryCity === 'gdynia', 'Delivery should be set');
+
+            log('\nStep 2: Call reset()', 'info');
+            service.reset();
+
+            state = service.getCurrentState();
+            log(`State after reset: ${JSON.stringify(state, null, 2)}`, 'info');
+            assert(state.pickupCity === null, 'Pickup should be null after reset');
+            assert(state.deliveryCity === null, 'Delivery should be null after reset');
+            assert(resetEventFired === true, 'Reset event should be fired');
+
+            log('Expected: State cleared and reset event fired ✓', 'success');
+        });
+
+        // Test 11: getCityDisplayInfo
+        test('getCityDisplayInfo - Display information for Gdańsk', (testDiv) => {
+            const service = new CityMatchingService();
+            const info = service.getCityDisplayInfo('gdansk');
+
+            log(`Input: getCityDisplayInfo('gdansk')`, 'info');
+            log(`Output:\n${JSON.stringify(info, null, 2)}`, 'info');
+
+            assert(info !== null, 'Should return info object');
+            assert(info.id === 'gdansk', 'ID should be gdansk');
+            assert(info.name === 'Gdańsk', 'Name should be Gdańsk');
+            assert(info.group === 'trojmiasto', 'Group should be trojmiasto');
+            assert(info.groupDisplayName === 'Trójmiasto', 'Group display name should be Trójmiasto');
+            assert(info.compatibleCities.includes('gdansk'), 'Compatible cities should include Gdańsk');
+            assert(info.compatibleCities.includes('gdynia'), 'Compatible cities should include Gdynia');
+            assert(info.compatibleCities.includes('sopot'), 'Compatible cities should include Sopot');
+            assert(info.compatibleCitiesNames.includes('Gdańsk'), 'Compatible city names should include Gdańsk');
+
+            log('Expected: Complete display info with group and compatible cities ✓', 'success');
+        });
+
+        // Test 12: Same city validation
+        test('Same city validation - validateCityPair("krakow", "krakow")', (testDiv) => {
+            const service = new CityMatchingService();
+            const result = service.validateCityPair('krakow', 'krakow');
+
+            log(`Input: validateCityPair('krakow', 'krakow')`, 'info');
+            log(`Output:\n${JSON.stringify(result, null, 2)}`, 'info');
+
+            assert(result.valid === true, 'Same city should be valid');
+            assert(result.message.includes('Dostawa możliwa w obrębie miasta'), 'Message should mention same city');
+            assert(result.message.includes('Kraków'), 'Message should mention city name');
+
+            log('Expected: { valid: true, message: "✅ Dostawa możliwa w obrębie miasta Kraków" } ✓', 'success');
+        });
+
+        // Test 13: Invalid city ID handling
+        test('Invalid city ID - validateCityPair("invalid", "gdansk")', (testDiv) => {
+            const service = new CityMatchingService();
+            const result = service.validateCityPair('invalid', 'gdansk');
+
+            log(`Input: validateCityPair('invalid', 'gdansk')`, 'info');
+            log(`Output:\n${JSON.stringify(result, null, 2)}`, 'info');
+
+            assert(result.valid === false, 'Invalid city should return invalid result');
+            assert(result.pickupCity === null, 'Pickup city should be null');
+            assert(result.message.includes('Nieprawidłowy'), 'Message should indicate invalid city');
+
+            log('Expected: { valid: false, message: "❌ Nieprawidłowy identyfikator miasta" } ✓', 'success');
+        });
+
+        // Test 14: Event listener removal
+        test('Event listener removal - removeEventListener()', (testDiv) => {
+            const service = new CityMatchingService();
+            let callCount = 0;
+
+            const handler = (data) => {
+                callCount++;
+            };
+
+            log('Step 1: Add event listener', 'info');
+            service.addEventListener('pickupCityChanged', handler);
+
+            log('Step 2: Trigger event', 'info');
+            service.setPickupCity('gdansk');
+            assert(callCount === 1, 'Event should be called once');
+
+            log('Step 3: Remove event listener', 'info');
+            service.removeEventListener('pickupCityChanged', handler);
+
+            log('Step 4: Trigger event again', 'info');
+            service.setPickupCity('krakow');
+            assert(callCount === 1, 'Event should not be called again after removal');
+
+            log('Expected: Event listener successfully removed ✓', 'success');
+        });
+
+        // Test 15: deliveryCityChanged event with validation
+        test('deliveryCityChanged event with validation', (testDiv) => {
+            const service = new CityMatchingService();
+            let deliveryEventFired = false;
+            let validationFailedEventFired = false;
+
+            service.addEventListener('deliveryCityChanged', (data) => {
+                deliveryEventFired = true;
+                log(`deliveryCityChanged event received`, 'success');
+                log(`Validation: ${JSON.stringify(data.validation, null, 2)}`, 'info');
+            });
+
+            service.addEventListener('validationFailed', (data) => {
+                validationFailedEventFired = true;
+                log(`validationFailed event received`, 'warning');
+                log(`Failed validation: ${JSON.stringify(data.validation, null, 2)}`, 'info');
+            });
+
+            log('Step 1: Set pickup to Kraków (single-city)', 'info');
+            service.setPickupCity('krakow');
+
+            log('Step 2: Try to set delivery to Gdańsk (incompatible)', 'info');
+            service.setDeliveryCity('gdansk');
+
+            assert(deliveryEventFired === true, 'deliveryCityChanged event should fire');
+            assert(validationFailedEventFired === true, 'validationFailed event should fire for incompatible cities');
+
+            log('Expected: Both events fired with validation data ✓', 'success');
+        });
+
+        // ===== GENERATE SUMMARY =====
+        setTimeout(() => {
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'summary';
+
+            const percentage = Math.round((testsPassed / testsTotal) * 100);
+
+            summaryDiv.innerHTML = `
+                <h2>📊 Test Summary</h2>
+                <div class="stats">
+                    <div class="stat stat-total">
+                        <div class="stat-number">${testsTotal}</div>
+                        <div class="stat-label">Total Tests</div>
+                    </div>
+                    <div class="stat stat-success">
+                        <div class="stat-number">${testsPassed}</div>
+                        <div class="stat-label">Passed</div>
+                    </div>
+                    <div class="stat stat-error">
+                        <div class="stat-number">${testsFailed}</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: ${testsFailed === 0 ? '#e8f5e9' : '#ffebee'}; border-radius: 5px; text-align: center; font-size: 18px; font-weight: bold;">
+                    ${testsFailed === 0 ? '✅ ALL TESTS PASSED!' : '❌ SOME TESTS FAILED'}
+                    <div style="font-size: 14px; margin-top: 5px; font-weight: normal;">
+                        Success Rate: ${percentage}%
+                    </div>
+                </div>
+            `;
+
+            output.insertBefore(summaryDiv, output.firstChild);
+
+            console.log('='.repeat(80));
+            console.log('TEST SUMMARY');
+            console.log('='.repeat(80));
+            console.log(`Total Tests: ${testsTotal}`);
+            console.log(`Passed: ${testsPassed}`);
+            console.log(`Failed: ${testsFailed}`);
+            console.log(`Success Rate: ${percentage}%`);
+            console.log('='.repeat(80));
+
+        }, 100);
+    </script>
+</body>
+</html>

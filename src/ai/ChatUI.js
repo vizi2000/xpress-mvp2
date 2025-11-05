@@ -12,7 +12,7 @@ export class ChatUI {
         this.bindEvents();
         this.showGreeting();
 
-        console.log('💬 ChatUI initialized (inline mode)');
+        console.log('ChatUI initialized (inline mode)');
     }
 
     /**
@@ -86,7 +86,7 @@ export class ChatUI {
     hideQuickPrompts() {
         this.quickPromptsContainer.classList.add('hidden');
         this.quickPromptsVisible = false;
-        console.log('💡 Quick prompts hidden');
+        console.log('Quick prompts hidden');
     }
 
     /**
@@ -142,10 +142,10 @@ export class ChatUI {
 
             // Check if order is ready for form filling
             const orderState = this.agent.getOrderState();
-            console.log('📥 CHAT UI RECEIVED orderState:', orderState);
-            console.log('📥 Has pickup?', !!orderState.pickup);
-            console.log('📥 Has delivery?', !!orderState.delivery);
-            console.log('📥 window.xpressApp exists?', !!window.xpressApp);
+            console.log('CHAT UI RECEIVED orderState:', orderState);
+            console.log('Has pickup?', !!orderState.pickup);
+            console.log('Has delivery?', !!orderState.delivery);
+            console.log('window.xpressApp exists?', !!window.xpressApp);
 
             if (orderState.pickup && orderState.delivery && window.xpressApp) {
                 this.fillFormFromOrderState(orderState);
@@ -215,9 +215,9 @@ export class ChatUI {
      * Fill form from chat order state
      */
     fillFormFromOrderState(orderState) {
-        console.log('📋 Chat → Form: Filling addresses with animation');
-        console.log('📋 Pickup address:', orderState.pickup);
-        console.log('📋 Delivery address:', orderState.delivery);
+        console.log('Chat → Form: Filling addresses with animation');
+        console.log('Pickup address:', orderState.pickup);
+        console.log('Delivery address:', orderState.delivery);
 
         if (window.xpressApp && window.xpressApp.fillAddressesFromChat) {
             window.xpressApp.fillAddressesFromChat(
@@ -228,7 +228,7 @@ export class ChatUI {
 
         // Select package size
         if (orderState.packageSize) {
-            console.log('📋 Chat → Form: Selecting package', orderState.packageSize);
+            console.log('Chat → Form: Selecting package', orderState.packageSize);
             if (window.xpressApp && window.xpressApp.selectPackageFromChat) {
                 window.xpressApp.selectPackageFromChat(orderState.packageSize);
             }

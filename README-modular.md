@@ -75,7 +75,7 @@ xpress-mvp/
 // src/config/api.config.js
 export const ApiConfig = {
     googleMaps: {
-        apiKey: 'AIzaSyAAF9Vp_cRnYnXYlDS1tJk5fmtTM8VSpFE'
+        apiKey: 'YOUR_GOOGLE_MAPS_API_KEY'
     },
     xpress: {
         baseUrl: 'https://api.xpress.delivery',

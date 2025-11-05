@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Matching Flow - Integration Tests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* Mock Form Styles */
+        #test-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 2px dashed #ddd;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Test Summary Styles */
+        #test-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        #test-summary.visible {
+            display: block;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Test Results Styles */
+        #test-results {
+            margin-top: 20px;
+        }
+
+        .test-scenario {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .test-scenario.passed {
+            border-color: #4caf50;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+        }
+
+        .test-scenario.failed {
+            border-color: #f44336;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
+        }
+
+        .test-header {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+        }
+
+        .test-scenario.passed .test-header {
+            background: #e8f5e9;
+        }
+
+        .test-scenario.failed .test-header {
+            background: #ffebee;
+        }
+
+        .test-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-status {
+            font-size: 24px;
+        }
+
+        .test-duration {
+            color: #666;
+            font-size: 13px;
+            margin-left: auto;
+            margin-right: 15px;
+        }
+
+        .test-details {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: none;
+            background: #fafafa;
+        }
+
+        .test-details.visible {
+            display: block;
+        }
+
+        .test-step {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            border-left: 3px solid #667eea;
+        }
+
+        .test-error {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .test-assertion {
+            color: #2e7d32;
+            margin-left: 20px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* Control Buttons */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading Indicator */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .loading.visible {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Performance Metrics */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 City Matching Flow - Integration Tests</h1>
+        <p class="subtitle">End-to-End testing of the complete city matching stack: AddressForm → CityMatchingService → Validators → UIHelpers</p>
+
+        <!-- Mock Form for Testing -->
+        <div id="test-form">
+            <h3 style="margin-bottom: 15px; color: #555;">Mock Order Form (Test Environment)</h3>
+            <div class="form-group">
+                <label for="pickup-address">Adres odbioru</label>
+                <input type="text" id="pickup-address" placeholder="np. ul. Długa 1, Gdańsk">
+            </div>
+            <div class="form-group">
+                <label for="delivery-address">Adres dostawy</label>
+                <input type="text" id="delivery-address" placeholder="np. ul. 10 Lutego 1, Gdynia">
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" id="run-tests">▶️ Run All Tests</button>
+            <button class="btn btn-secondary" id="clear-results">🧹 Clear Results</button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Running integration tests...</div>
+        </div>
+
+        <!-- Test Summary -->
+        <div id="test-summary"></div>
+
+        <!-- Test Results -->
+        <div id="test-results"></div>
+    </div>
+
+    <script type="module">
+        import { CityMatchingService } from '../../src/services/CityMatchingService.js';
+        import { Validators } from '../../src/utils/Validators.js';
+        import { UIHelpers } from '../../src/utils/UIHelpers.js';
+        import { CITY_GROUPS, ALL_CITY_IDS } from '../../src/config/cities.config.js';
+
+        /**
+         * Integration Test Runner
+         * Tests the complete city matching flow from user input to validation
+         */
+        class IntegrationTestRunner {
+            constructor() {
+                this.tests = [];
+                this.passed = 0;
+                this.failed = 0;
+                this.totalDuration = 0;
+                this.testDurations = [];
+                this.cityMatchingService = new CityMatchingService();
+                this.setupEventListeners();
+            }
+
+            /**
+             * Setup event listeners for CityMatchingService
+             */
+            setupEventListeners() {
+                this.pickupCityChanged = null;
+                this.deliveryCityChanged = null;
+                this.validationFailed = null;
+
+                this.cityMatchingService.addEventListener('pickupCityChanged', (data) => {
+                    console.log('🔔 Event: pickupCityChanged', data);
+                    this.pickupCityChanged = data;
+                });
+
+                this.cityMatchingService.addEventListener('deliveryCityChanged', (data) => {
+                    console.log('🔔 Event: deliveryCityChanged', data);
+                    this.deliveryCityChanged = data;
+                });
+
+                this.cityMatchingService.addEventListener('validationFailed', (data) => {
+                    console.log('🔔 Event: validationFailed', data);
+                    this.validationFailed = data;
+                });
+            }
+
+            /**
+             * Register a test scenario
+             */
+            async scenario(name, setupFn, testFn, cleanupFn) {
+                this.tests.push({ name, setupFn, testFn, cleanupFn });
+            }
+
+            /**
+             * Run all registered tests
+             */
+            async run() {
+                console.log('🚀 Starting Integration Test Suite...\n');
+                console.log('═══════════════════════════════════════════════════════\n');
+
+                this.passed = 0;
+                this.failed = 0;
+                this.totalDuration = 0;
+                this.testDurations = [];
+
+                const resultsContainer = document.getElementById('test-results');
+                resultsContainer.innerHTML = '';
+
+                for (const test of this.tests) {
+                    const startTime = performance.now();
+                    console.group(`📋 Scenario: ${test.name}`);
+
+                    const resultElement = this.createTestElement(test.name);
+                    resultsContainer.appendChild(resultElement);
+
+                    try {
+                        // Reset event listeners
+                        this.pickupCityChanged = null;
+                        this.deliveryCityChanged = null;
+                        this.validationFailed = null;
+
+                        // Setup
+                        if (test.setupFn) {
+                            console.log('⚙️  Setup...');
+                            await test.setupFn.call(this);
+                            this.addTestStep(resultElement, '⚙️ Setup completed');
+                        }
+
+                        // Run test
+                        console.log('▶️  Running test...');
+                        await test.testFn.call(this);
+
+                        // Cleanup
+                        if (test.cleanupFn) {
+                            console.log('🧹 Cleanup...');
+                            await test.cleanupFn.call(this);
+                        }
+
+                        const duration = Math.round(performance.now() - startTime);
+                        this.testDurations.push(duration);
+                        this.totalDuration += duration;
+
+                        this.passed++;
+                        this.markTestPassed(resultElement, duration);
+                        console.log(`✅ PASS (${duration}ms)\n`);
+
+                    } catch (error) {
+                        const duration = Math.round(performance.now() - startTime);
+                        this.testDurations.push(duration);
+                        this.totalDuration += duration;
+
+                        this.failed++;
+                        this.markTestFailed(resultElement, error, duration);
+                        console.error('❌ FAIL:', error.message);
+                        console.error(error.stack);
+                    }
+
+                    console.groupEnd();
+                }
+
+                console.log('\n═══════════════════════════════════════════════════════');
+                this.printSummary();
+            }
+
+            /**
+             * Create test result element
+             */
+            createTestElement(name) {
+                const div = document.createElement('div');
+                div.className = 'test-scenario';
+                div.innerHTML = `
+                    <div class="test-header">
+                        <div class="test-title">
+                            <span class="test-status">⏳</span>
+                            <span>${name}</span>
+                        </div>
+                        <span class="test-duration"></span>
+                        <span>▼</span>
+                    </div>
+                    <div class="test-details"></div>
+                `;
+
+                // Toggle details on click
+                div.querySelector('.test-header').addEventListener('click', () => {
+                    const details = div.querySelector('.test-details');
+                    details.classList.toggle('visible');
+                });
+
+                return div;
+            }
+
+            /**
+             * Add a test step to the results
+             */
+            addTestStep(element, message) {
+                const details = element.querySelector('.test-details');
+                const step = document.createElement('div');
+                step.className = 'test-step';
+                step.textContent = message;
+                details.appendChild(step);
+            }
+
+            /**
+             * Add an assertion result to the test
+             */
+            addAssertion(element, message) {
+                const details = element.querySelector('.test-details');
+                const assertion = document.createElement('div');
+                assertion.className = 'test-assertion';
+                assertion.textContent = '✓ ' + message;
+                details.appendChild(assertion);
+            }
+
+            /**
+             * Mark test as passed
+             */
+            markTestPassed(element, duration) {
+                element.classList.add('passed');
+                element.querySelector('.test-status').textContent = '✅';
+                element.querySelector('.test-duration').textContent = `${duration}ms`;
+            }
+
+            /**
+             * Mark test as failed
+             */
+            markTestFailed(element, error, duration) {
+                element.classList.add('failed');
+                element.querySelector('.test-status').textContent = '❌';
+                element.querySelector('.test-duration').textContent = `${duration}ms`;
+
+                const details = element.querySelector('.test-details');
+                details.classList.add('visible'); // Auto-expand failures
+
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'test-error';
+                errorDiv.textContent = `Error: ${error.message}\n\n${error.stack}`;
+                details.appendChild(errorDiv);
+            }
+
+            /**
+             * Print test summary
+             */
+            printSummary() {
+                const total = this.passed + this.failed;
+                const passRate = total > 0 ? Math.round((this.passed / total) * 100) : 0;
+                const avgDuration = this.testDurations.length > 0
+                    ? Math.round(this.testDurations.reduce((a, b) => a + b, 0) / this.testDurations.length)
+                    : 0;
+                const slowest = Math.max(...this.testDurations, 0);
+                const fastest = Math.min(...this.testDurations, 0);
+
+                console.log('\n📊 TEST SUMMARY');
+                console.log('═══════════════════════════════════════════════════════');
+                console.log(`Total Tests:     ${total}`);
+                console.log(`✅ Passed:       ${this.passed}`);
+                console.log(`❌ Failed:       ${this.failed}`);
+                console.log(`📈 Pass Rate:    ${passRate}%`);
+                console.log(`⏱️  Total Time:   ${this.totalDuration}ms`);
+                console.log(`📊 Avg Duration: ${avgDuration}ms`);
+                console.log(`🐌 Slowest:      ${slowest}ms`);
+                console.log(`🚀 Fastest:      ${fastest}ms`);
+                console.log('═══════════════════════════════════════════════════════\n');
+
+                // Update UI summary
+                const summaryElement = document.getElementById('test-summary');
+                summaryElement.className = 'visible';
+                summaryElement.innerHTML = `
+                    <div class="summary-row">
+                        <span>Total Tests:</span>
+                        <span>${total}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>✅ Passed:</span>
+                        <span>${this.passed}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>❌ Failed:</span>
+                        <span>${this.failed}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Pass Rate:</span>
+                        <span>${passRate}%</span>
+                    </div>
+                `;
+
+                // Add metrics
+                summaryElement.innerHTML += `
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <div class="metric-value">${this.totalDuration}ms</div>
+                            <div class="metric-label">Total Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${avgDuration}ms</div>
+                            <div class="metric-label">Avg Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${slowest}ms</div>
+                            <div class="metric-label">Slowest Test</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${fastest}ms</div>
+                            <div class="metric-label">Fastest Test</div>
+                        </div>
+                    </div>
+                `;
+
+                if (this.failed === 0) {
+                    console.log('🎉 ALL TESTS PASSED!');
+                } else {
+                    console.log(`⚠️  ${this.failed} TEST(S) FAILED`);
+                }
+            }
+
+            // ==========================================
+            // TEST HELPER METHODS
+            // ==========================================
+
+            /**
+             * Simulate typing in input
+             */
+            async typeInInput(inputElement, text) {
+                inputElement.value = text;
+                inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+
+                // Wait for debouncing (800ms + 100ms buffer)
+                await this.wait(900);
+            }
+
+            /**
+             * Wait for specified milliseconds
+             */
+            async wait(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            /**
+             * Assert element exists
+             */
+            assertElementExists(selector, message) {
+                const element = document.querySelector(selector);
+                if (!element) {
+                    throw new Error(message || `Element not found: ${selector}`);
+                }
+                return element;
+            }
+
+            /**
+             * Assert element does NOT exist
+             */
+            assertElementNotExists(selector, message) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    throw new Error(message || `Element should not exist: ${selector}`);
+                }
+            }
+
+            /**
+             * Assert text content contains expected string
+             */
+            assertTextContains(selector, expectedText, message) {
+                const element = this.assertElementExists(selector);
+                const actualText = element.textContent || element.innerHTML;
+
+                if (!actualText.includes(expectedText)) {
+                    throw new Error(message || `Expected text to contain "${expectedText}", got "${actualText}"`);
+                }
+            }
+
+            /**
+             * Assert equality
+             */
+            assertEqual(actual, expected, message) {
+                if (actual !== expected) {
+                    throw new Error(message || `Expected "${expected}", got "${actual}"`);
+                }
+            }
+
+            /**
+             * Assert true
+             */
+            assertTrue(condition, message) {
+                if (!condition) {
+                    throw new Error(message || 'Expected condition to be true');
+                }
+            }
+
+            /**
+             * Assert false
+             */
+            assertFalse(condition, message) {
+                if (condition) {
+                    throw new Error(message || 'Expected condition to be false');
+                }
+            }
+        }
+
+        // ==========================================
+        // TEST SCENARIOS
+        // ==========================================
+
+        const runner = new IntegrationTestRunner();
+
+        // Scenario 1: Trójmiasto Smart Matching (Happy Path)
+        runner.scenario(
+            'Scenario 1: Trójmiasto Smart Matching - Gdańsk → Gdynia',
+
+            // Setup
+            async function() {
+                document.getElementById('pickup-address').value = '';
+                document.getElementById('delivery-address').value = '';
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            },
+
+            // Test
+            async function() {
+                const pickupInput = document.getElementById('pickup-address');
+                const deliveryInput = document.getElementById('delivery-address');
+
+                // Step 1: User types pickup address (Gdańsk)
+                await this.typeInInput(pickupInput, 'ul. Długa 1, Gdańsk');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ User typed: "ul. Długa 1, Gdańsk"');
+
+                // Step 2: Detect city
+                const pickupCity = Validators.extractCityFromAddress(pickupInput.value);
+                this.assertEqual(pickupCity, 'gdansk', 'Pickup city should be detected as "gdansk"');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    'City detected: gdansk');
+
+                // Step 3: Set pickup city in service
+                this.cityMatchingService.setPickupCity(pickupCity);
+
+                // Step 4: Verify allowed delivery cities
+                const allowedCities = this.cityMatchingService.suggestDeliveryCities('gdansk');
+                this.assertTrue(allowedCities.includes('gdansk'), 'Should include Gdańsk');
+                this.assertTrue(allowedCities.includes('gdynia'), 'Should include Gdynia');
+                this.assertTrue(allowedCities.includes('sopot'), 'Should include Sopot');
+                this.assertEqual(allowedCities.length, 3, 'Should suggest exactly 3 cities (Trójmiasto)');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    `Allowed cities: ${allowedCities.join(', ')}`);
+
+                // Step 5: User types delivery address (Gdynia)
+                await this.typeInInput(deliveryInput, 'ul. 10 Lutego 1, Gdynia');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ User typed: "ul. 10 Lutego 1, Gdynia"');
+
+                // Step 6: Detect delivery city
+                const deliveryCity = Validators.extractCityFromAddress(deliveryInput.value);
+                this.assertEqual(deliveryCity, 'gdynia', 'Delivery city should be detected as "gdynia"');
+
+                // Step 7: Set delivery city and validate
+                this.cityMatchingService.setDeliveryCity(deliveryCity);
+
+                // Step 8: Verify validation passed
+                const state = this.cityMatchingService.getCurrentState();
+                this.assertTrue(state.isValid, 'Cities should be compatible (Trójmiasto)');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    '✅ Validation passed: Cities are compatible');
+
+                console.log('✓ Trójmiasto smart matching works correctly');
+            },
+
+            // Cleanup
+            async function() {
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            }
+        );
+
+        // Scenario 2: Cross-Group Rejection (Error Path)
+        runner.scenario(
+            'Scenario 2: Cross-Group Rejection - Gdańsk → Kraków (INCOMPATIBLE)',
+
+            // Setup
+            async function() {
+                document.getElementById('pickup-address').value = '';
+                document.getElementById('delivery-address').value = '';
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            },
+
+            // Test
+            async function() {
+                const pickupInput = document.getElementById('pickup-address');
+                const deliveryInput = document.getElementById('delivery-address');
+
+                // Type Gdańsk in pickup
+                await this.typeInInput(pickupInput, 'ul. Długa 1, Gdańsk');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ Pickup: ul. Długa 1, Gdańsk');
+
+                const pickupCity = Validators.extractCityFromAddress(pickupInput.value);
+                this.cityMatchingService.setPickupCity(pickupCity);
+
+                // Type Kraków in delivery (INCOMPATIBLE)
+                await this.typeInInput(deliveryInput, 'ul. Floriańska 1, Kraków');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ Delivery: ul. Floriańska 1, Kraków');
+
+                const deliveryCity = Validators.extractCityFromAddress(deliveryInput.value);
+                this.cityMatchingService.setDeliveryCity(deliveryCity);
+
+                // Verify validation failed
+                const state = this.cityMatchingService.getCurrentState();
+                this.assertFalse(state.isValid, 'Cities should NOT be compatible');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    '❌ Validation correctly failed (different groups)');
+
+                // Verify validationFailed event was triggered
+                this.assertTrue(this.validationFailed !== null, 'validationFailed event should be triggered');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    'validationFailed event was triggered');
+
+                console.log('✓ Cross-group rejection works correctly');
+            },
+
+            // Cleanup
+            async function() {
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            }
+        );
+
+        // Scenario 3: Same City Delivery (Single City)
+        runner.scenario(
+            'Scenario 3: Same City Delivery - Kraków → Kraków',
+
+            async function() {
+                document.getElementById('pickup-address').value = '';
+                document.getElementById('delivery-address').value = '';
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            },
+
+            async function() {
+                const pickupInput = document.getElementById('pickup-address');
+                const deliveryInput = document.getElementById('delivery-address');
+
+                await this.typeInInput(pickupInput, 'ul. Floriańska 1, Kraków');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ Pickup: Kraków');
+
+                const pickupCity = Validators.extractCityFromAddress(pickupInput.value);
+                this.cityMatchingService.setPickupCity(pickupCity);
+
+                // Check allowed cities for single-city operation
+                const allowedCities = this.cityMatchingService.suggestDeliveryCities('krakow');
+                this.assertEqual(allowedCities.length, 1, 'Single city should only allow same city');
+                this.assertTrue(allowedCities.includes('krakow'), 'Should only allow Kraków');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    'Only Kraków allowed for delivery');
+
+                await this.typeInInput(deliveryInput, 'Rynek Główny 1, Kraków');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ Delivery: Kraków (same city)');
+
+                const deliveryCity = Validators.extractCityFromAddress(deliveryInput.value);
+                this.cityMatchingService.setDeliveryCity(deliveryCity);
+
+                const state = this.cityMatchingService.getCurrentState();
+                this.assertTrue(state.isValid, 'Same city delivery should be valid');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    '✅ Same city delivery validated successfully');
+
+                console.log('✓ Same city delivery works correctly');
+            },
+
+            async function() {
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            }
+        );
+
+        // Scenario 4: Katowice Metro Group
+        runner.scenario(
+            'Scenario 4: Katowice Metro Group - Katowice → Sosnowiec',
+
+            async function() {
+                document.getElementById('pickup-address').value = '';
+                document.getElementById('delivery-address').value = '';
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            },
+
+            async function() {
+                const pickupInput = document.getElementById('pickup-address');
+                const deliveryInput = document.getElementById('delivery-address');
+
+                await this.typeInInput(pickupInput, 'ul. Katowicka 1, Katowice');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ Pickup: Katowice');
+
+                const pickupCity = Validators.extractCityFromAddress(pickupInput.value);
+                this.cityMatchingService.setPickupCity(pickupCity);
+
+                const allowedCities = this.cityMatchingService.suggestDeliveryCities('katowice');
+                this.assertEqual(allowedCities.length, 7, 'Katowice Metro should have 7 cities');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    'Katowice Metro: 7 cities available');
+
+                await this.typeInInput(deliveryInput, 'ul. Sosnowiecka 1, Sosnowiec');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ Delivery: Sosnowiec');
+
+                const deliveryCity = Validators.extractCityFromAddress(deliveryInput.value);
+                this.cityMatchingService.setDeliveryCity(deliveryCity);
+
+                const state = this.cityMatchingService.getCurrentState();
+                this.assertTrue(state.isValid, 'Katowice Metro cities should be compatible');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    '✅ Metro cities are compatible');
+
+                console.log('✓ Katowice Metro group works correctly');
+            },
+
+            async function() {
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            }
+        );
+
+        // Scenario 5: Invalid Address (No City)
+        runner.scenario(
+            'Scenario 5: Invalid Address - No City Detected',
+
+            async function() {
+                document.getElementById('pickup-address').value = '';
+                document.getElementById('delivery-address').value = '';
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            },
+
+            async function() {
+                const pickupInput = document.getElementById('pickup-address');
+
+                await this.typeInInput(pickupInput, 'ul. Długa 1');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🖊️ Typed: "ul. Długa 1" (no city)');
+
+                const pickupCity = Validators.extractCityFromAddress(pickupInput.value);
+                this.assertEqual(pickupCity, null, 'Should not extract city from incomplete address');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    'No city detected (as expected)');
+
+                // Verify autocomplete shows ALL cities (no restriction)
+                const allowedCities = this.cityMatchingService.suggestDeliveryCities(null);
+                this.assertEqual(allowedCities.length, ALL_CITY_IDS.length,
+                    'Should suggest all supported cities when no pickup city');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    `All ${ALL_CITY_IDS.length} cities available in autocomplete`);
+
+                console.log('✓ Invalid address handling works correctly');
+            },
+
+            async function() {
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            }
+        );
+
+        // Scenario 6: Form Reset
+        runner.scenario(
+            'Scenario 6: Form Reset Clears All State',
+
+            async function() {
+                document.getElementById('pickup-address').value = '';
+                document.getElementById('delivery-address').value = '';
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            },
+
+            async function() {
+                const pickupInput = document.getElementById('pickup-address');
+
+                // Set initial state
+                await this.typeInInput(pickupInput, 'ul. Długa 1, Gdańsk');
+                this.cityMatchingService.setPickupCity('gdansk');
+
+                const stateBefore = this.cityMatchingService.getCurrentState();
+                this.assertEqual(stateBefore.pickupCity, 'gdansk', 'Pickup city should be set');
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '✓ Initial state: pickup city = gdansk');
+
+                // Reset
+                this.cityMatchingService.reset();
+                UIHelpers.clearCityFeedback();
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    '🔄 Reset called');
+
+                const stateAfter = this.cityMatchingService.getCurrentState();
+                this.assertEqual(stateAfter.pickupCity, null, 'Pickup city should be cleared');
+                this.assertEqual(stateAfter.deliveryCity, null, 'Delivery city should be cleared');
+                this.assertFalse(stateAfter.isValid, 'State should not be valid after reset');
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    'All state cleared successfully');
+
+                console.log('✓ Form reset works correctly');
+            },
+
+            async function() {
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            }
+        );
+
+        // Scenario 7: City Extraction Edge Cases
+        runner.scenario(
+            'Scenario 7: City Extraction - Various Address Formats',
+
+            async function() {
+                // No setup needed
+            },
+
+            async function() {
+                // Test various address formats
+                const testCases = [
+                    { address: 'ul. Długa 1, 80-001 Gdańsk', expected: 'gdansk' },
+                    { address: 'Kraków, ul. Floriańska 1', expected: 'krakow' },
+                    { address: '31-001 Kraków, Floriańska', expected: 'krakow' },
+                    { address: 'Marszałkowska 45, Warszawa', expected: 'warszawa' },
+                    { address: 'ul. Piotrkowska 1, Łódź', expected: 'lodz' },
+                    { address: 'Sopot, ul. Bohaterów Monte Cassino', expected: 'sopot' },
+                ];
+
+                for (const testCase of testCases) {
+                    const extracted = Validators.extractCityFromAddress(testCase.address);
+                    this.assertEqual(extracted, testCase.expected,
+                        `Should extract "${testCase.expected}" from "${testCase.address}"`);
+                    this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                        `"${testCase.address}" → ${extracted}`);
+                }
+
+                console.log('✓ City extraction handles various formats correctly');
+            },
+
+            async function() {
+                // No cleanup needed
+            }
+        );
+
+        // Scenario 8: Performance - Rapid City Changes
+        runner.scenario(
+            'Scenario 8: Performance - Rapid City Changes',
+
+            async function() {
+                document.getElementById('pickup-address').value = '';
+                document.getElementById('delivery-address').value = '';
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            },
+
+            async function() {
+                const startTime = performance.now();
+
+                // Rapidly change cities
+                for (let i = 0; i < 10; i++) {
+                    this.cityMatchingService.setPickupCity('gdansk');
+                    this.cityMatchingService.setDeliveryCity('gdynia');
+                    this.cityMatchingService.reset();
+                }
+
+                const duration = performance.now() - startTime;
+                this.addTestStep(document.querySelector('.test-scenario:last-child'),
+                    `⚡ Performed 30 operations (10x set pickup, delivery, reset)`);
+
+                this.assertTrue(duration < 100,
+                    `Operations should complete in <100ms (actual: ${duration.toFixed(2)}ms)`);
+                this.addAssertion(document.querySelector('.test-scenario:last-child'),
+                    `Performance: ${duration.toFixed(2)}ms for 30 operations`);
+
+                // Verify final state is clean
+                const state = this.cityMatchingService.getCurrentState();
+                this.assertEqual(state.pickupCity, null, 'Should be reset');
+                this.assertEqual(state.deliveryCity, null, 'Should be reset');
+
+                console.log('✓ Performance test passed');
+            },
+
+            async function() {
+                UIHelpers.clearCityFeedback();
+                this.cityMatchingService.reset();
+            }
+        );
+
+        // ==========================================
+        // UI CONTROLS
+        // ==========================================
+
+        document.getElementById('run-tests').addEventListener('click', async () => {
+            const btn = document.getElementById('run-tests');
+            const loading = document.getElementById('loading');
+
+            btn.disabled = true;
+            loading.classList.add('visible');
+
+            try {
+                await runner.run();
+            } catch (error) {
+                console.error('Test runner error:', error);
+            }
+
+            loading.classList.remove('visible');
+            btn.disabled = false;
+        });
+
+        document.getElementById('clear-results').addEventListener('click', () => {
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('test-summary').classList.remove('visible');
+            console.clear();
+            console.log('🧹 Results cleared');
+        });
+
+        // Auto-run tests on load (optional)
+        console.log('💡 Integration tests ready. Click "Run All Tests" to begin.');
+        console.log('📚 Total scenarios registered:', runner.tests.length);
+    </script>
+</body>
+</html>
