@@ -153,6 +153,12 @@ export class ChatUI {
                 }
             }
 
+            // Check if order is complete and ready for payment
+            if (response.readyForPayment) {
+                console.log('Order complete - showing payment button');
+                this.showPaymentButton(response.orderState);
+            }
+
         } catch (error) {
             console.error('❌ Chat error:', error);
             typingIndicator.remove();
@@ -242,6 +248,92 @@ export class ChatUI {
                 this.toggleFormAccordion();
             }, 500);
         }
+    }
+
+    /**
+     * Show payment button when order is complete
+     */
+    showPaymentButton(orderState) {
+        // Create special payment message
+        const paymentDiv = document.createElement('div');
+        paymentDiv.className = 'message assistant payment-message';
+
+        // Calculate price (simplified - should get from PriceCalculator)
+        const basePrice = 25; // Default base price
+
+        paymentDiv.innerHTML = `
+            <div class="message-bubble payment-bubble">
+                <div class="payment-summary">
+                    <h3>Podsumowanie zamówienia</h3>
+                    <div class="payment-details">
+                        <div class="detail-row">
+                            <span>Odbiór:</span>
+                            <strong>${orderState.pickup || 'Nie podano'}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Dostawa:</span>
+                            <strong>${orderState.delivery || 'Nie podano'}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Rozmiar:</span>
+                            <strong>${this.getPackageSizeLabel(orderState.packageSize)}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Kontakt:</span>
+                            <strong>${orderState.contactName || orderState.contactEmail}</strong>
+                        </div>
+                    </div>
+                    <button class="chat-payment-btn" id="chat-payment-btn">
+                        Przejdź do płatności
+                    </button>
+                </div>
+            </div>
+        `;
+
+        this.messagesContainer.appendChild(paymentDiv);
+        this.scrollToBottom();
+
+        // Bind payment button
+        const paymentBtn = document.getElementById('chat-payment-btn');
+        if (paymentBtn) {
+            paymentBtn.addEventListener('click', () => {
+                this.handlePaymentClick(orderState);
+            });
+        }
+    }
+
+    /**
+     * Handle payment button click
+     */
+    handlePaymentClick(orderState) {
+        console.log('Payment button clicked - scrolling to form');
+
+        // Expand form accordion if not already open
+        if (!this.formAccordionContent.classList.contains('open')) {
+            this.toggleFormAccordion();
+        }
+
+        // Wait for accordion animation
+        setTimeout(() => {
+            // Scroll to order form section
+            const orderFormSection = document.getElementById('order-form-section');
+            if (orderFormSection) {
+                orderFormSection.style.display = 'block';
+                orderFormSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 300);
+    }
+
+    /**
+     * Get package size label
+     */
+    getPackageSizeLabel(size) {
+        const labels = {
+            'small': 'Mała paczka',
+            'medium': 'Średnia paczka',
+            'large': 'Duża paczka'
+        };
+        return labels[size] || size || 'Nie wybrano';
     }
 
     /**
