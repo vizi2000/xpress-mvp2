@@ -150,7 +150,11 @@ export class XpressApp {
         this.orderData.pickup = pickup;
         this.orderData.delivery = delivery;
 
-        await this.priceCalculator.calculatePrice(pickup, delivery);
+        // Get cached coordinates from autocomplete (if available)
+        const cachedCoords = this.addressForm.getCachedCoordinates();
+        console.log('📍 Cached coordinates from autocomplete:', cachedCoords);
+
+        await this.priceCalculator.calculatePrice(pickup, delivery, cachedCoords);
 
         // Update order data with calculation results
         const lastCalculation = this.priceCalculator.getLastCalculation();

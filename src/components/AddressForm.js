@@ -15,6 +15,10 @@ export class AddressForm {
         // Track allowed delivery cities (for LocationIQ filtering)
         this.allowedDeliveryCities = null;
 
+        // Cache coordinates from LocationIQ autocomplete selections
+        this.cachedPickupCoords = null;
+        this.cachedDeliveryCoords = null;
+
         this.init();
     }
 
@@ -411,6 +415,19 @@ export class AddressForm {
 
                             item.addEventListener('click', () => {
                                 input.value = suggestion.description || suggestion.display_name || '';
+
+                                // Cache coordinates from LocationIQ suggestion
+                                if (suggestion.lat && suggestion.lon) {
+                                    const coords = { lat: parseFloat(suggestion.lat), lng: parseFloat(suggestion.lon) };
+                                    if (isPickup) {
+                                        this.cachedPickupCoords = coords;
+                                        console.log('📍 Cached pickup coords:', coords);
+                                    } else {
+                                        this.cachedDeliveryCoords = coords;
+                                        console.log('📍 Cached delivery coords:', coords);
+                                    }
+                                }
+
                                 list.style.display = 'none';
                                 this.handleAddressChange();
                             });
@@ -577,6 +594,16 @@ export class AddressForm {
     }
 
     /**
+     * Get cached coordinates from last autocomplete selection
+     */
+    getCachedCoordinates() {
+        return {
+            pickup: this.cachedPickupCoords,
+            delivery: this.cachedDeliveryCoords
+        };
+    }
+
+    /**
      * Reset city matching state
      */
     reset() {
@@ -584,6 +611,8 @@ export class AddressForm {
         this.clearCityHint();
         this.clearCityError();
         this.allowedDeliveryCities = null;
+        this.cachedPickupCoords = null;
+        this.cachedDeliveryCoords = null;
 
         console.log('[AddressForm] City matching state reset');
     }

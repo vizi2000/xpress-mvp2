@@ -15,8 +15,8 @@ export class PriceCalculator {
     }
 
     // Calculate prices for given addresses
-    async calculatePrice(pickupAddress, deliveryAddress) {
-        console.log('💰 CALC PRICE:', { pickupAddress, deliveryAddress });
+    async calculatePrice(pickupAddress, deliveryAddress, cachedCoords = null) {
+        console.log('💰 CALC PRICE:', { pickupAddress, deliveryAddress, cachedCoords });
 
         try {
             UIHelpers.showLoading('Obliczam cenę...');
@@ -29,7 +29,7 @@ export class PriceCalculator {
                 this.showResults(result);
             } catch (apiError) {
                 console.warn('⚠️ Real API failed, using estimated pricing:', apiError.message);
-                const result = await this.calculateEstimatedPrice(pickupAddress, deliveryAddress);
+                const result = await this.calculateEstimatedPrice(pickupAddress, deliveryAddress, cachedCoords);
                 console.log('💰 Estimated price calculation result:', result);
                 this.showResults(result);
             }
@@ -67,31 +67,39 @@ export class PriceCalculator {
     }
 
     // Calculate estimated price when Google Maps API is unavailable
-    async calculateEstimatedPrice(pickupAddress, deliveryAddress) {
+    async calculateEstimatedPrice(pickupAddress, deliveryAddress, cachedCoords = null) {
         // Validate cities first
         this.pricingService.validateCitySupport(pickupAddress, deliveryAddress);
-        
+
         // Use estimated distance based on city centers (rough approximation)
         const estimatedDistance = this.estimateDistanceBetweenAddresses(pickupAddress, deliveryAddress);
-        
+
         // Validate distance limit
         this.pricingService.validateDistance(estimatedDistance);
-        
+
         // Calculate prices based on estimated distance
         const prices = this.pricingService.calculatePrices(estimatedDistance);
-        
+
         // Add short delay to simulate API call
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
+        // Use cached coordinates from autocomplete if available
+        const pickupCoords = (cachedCoords && cachedCoords.pickup) ? cachedCoords.pickup : null;
+        const deliveryCoords = (cachedCoords && cachedCoords.delivery) ? cachedCoords.delivery : null;
+
+        if (pickupCoords && deliveryCoords) {
+            console.log('✅ Using cached coords from autocomplete:', { pickupCoords, deliveryCoords });
+        }
+
         return {
             distance: estimatedDistance.toFixed(1),
             timeEstimate: `${Math.floor(estimatedDistance * 2.5)}-${Math.floor(estimatedDistance * 2.5) + 10}`,
             prices: prices,
             breakdown: this.pricingService.getPricingBreakdown(estimatedDistance),
             estimated: true, // Flag to indicate this is estimated
-            // Null for estimated (no real geocoding done)
-            pickupCoords: null,
-            deliveryCoords: null
+            // Use cached coords if available, otherwise null
+            pickupCoords: pickupCoords,
+            deliveryCoords: deliveryCoords
         };
     }
     
