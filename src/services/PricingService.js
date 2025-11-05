@@ -9,14 +9,20 @@ export class PricingService {
     }
 
     // Validate if cities are supported
-    validateCitySupport(pickupAddress, deliveryAddress) {
-        const pickupSupported = this.supportedCities.some(city => 
+    validateCitySupport(pickupAddress, deliveryAddress, skipValidation = false) {
+        // Skip validation if requested (e.g., when chat fills partial addresses)
+        if (skipValidation) {
+            console.log('⏭️ Skipping city validation (partial address)');
+            return;
+        }
+
+        const pickupSupported = this.supportedCities.some(city =>
             pickupAddress.toLowerCase().includes(city.toLowerCase())
         );
-        const deliverySupported = this.supportedCities.some(city => 
+        const deliverySupported = this.supportedCities.some(city =>
             deliveryAddress.toLowerCase().includes(city.toLowerCase())
         );
-        
+
         if (!pickupSupported) {
             throw new Error(`Usługa niedostępna w mieście odbioru. Obsługujemy: Warszawa, Łódź, Poznań, Kraków, Wrocław, Szczecin, Trójmiasto, Katowice, Bielsko-Biała`);
         }

@@ -144,8 +144,8 @@ export class XpressApp {
     }
 
     // Handle address change
-    async handleAddressChange(pickup, delivery) {
-        console.log('🧮 HANDLE ADDRESS CHANGE:', { pickup, delivery });
+    async handleAddressChange(pickup, delivery, skipCityValidation = false) {
+        console.log('🧮 HANDLE ADDRESS CHANGE:', { pickup, delivery, skipCityValidation });
 
         this.orderData.pickup = pickup;
         this.orderData.delivery = delivery;
@@ -154,7 +154,7 @@ export class XpressApp {
         const cachedCoords = this.addressForm.getCachedCoordinates();
         console.log('📍 Cached coordinates from autocomplete:', cachedCoords);
 
-        await this.priceCalculator.calculatePrice(pickup, delivery, cachedCoords);
+        await this.priceCalculator.calculatePrice(pickup, delivery, cachedCoords, skipCityValidation);
 
         // Update order data with calculation results
         const lastCalculation = this.priceCalculator.getLastCalculation();
@@ -485,9 +485,10 @@ export class XpressApp {
         }
 
         // Trigger address change to calculate route
+        // Skip city validation since chat may provide partial addresses (without city name)
         if (pickup && delivery) {
             console.log('🎯 Triggering handleAddressChange...');
-            this.handleAddressChange(pickup, delivery);
+            this.handleAddressChange(pickup, delivery, true); // Skip city validation for chat addresses
 
             // Scroll to results after a brief delay
             setTimeout(() => {

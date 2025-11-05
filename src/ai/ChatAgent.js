@@ -78,6 +78,19 @@ export class ChatAgent {
             const stored = localStorage.getItem('xpress_chat_history');
             if (stored) {
                 const data = JSON.parse(stored);
+                const timestamp = data.timestamp ? new Date(data.timestamp) : null;
+                const now = new Date();
+
+                // If history is older than 24 hours, clear it and start fresh
+                if (timestamp) {
+                    const hoursSinceLastVisit = (now - timestamp) / (1000 * 60 * 60);
+                    if (hoursSinceLastVisit > 24) {
+                        console.log('🕒 Chat history older than 24h - clearing...');
+                        this.clearHistory();
+                        return;
+                    }
+                }
+
                 this.conversationHistory = data.history || [];
                 this.state = data.state || ChatState.IDLE;
                 this.orderData = data.orderData || this.orderData;

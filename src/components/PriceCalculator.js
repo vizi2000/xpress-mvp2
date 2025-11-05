@@ -15,8 +15,8 @@ export class PriceCalculator {
     }
 
     // Calculate prices for given addresses
-    async calculatePrice(pickupAddress, deliveryAddress, cachedCoords = null) {
-        console.log('💰 CALC PRICE:', { pickupAddress, deliveryAddress, cachedCoords });
+    async calculatePrice(pickupAddress, deliveryAddress, cachedCoords = null, skipCityValidation = false) {
+        console.log('💰 CALC PRICE:', { pickupAddress, deliveryAddress, cachedCoords, skipCityValidation });
 
         try {
             UIHelpers.showLoading('Obliczam cenę...');
@@ -24,12 +24,12 @@ export class PriceCalculator {
             // Try real API first, fallback to estimated pricing if Google Maps fails
             try {
                 console.log('💰 Attempting real price calculation...');
-                const result = await this.calculateRealPrice(pickupAddress, deliveryAddress);
+                const result = await this.calculateRealPrice(pickupAddress, deliveryAddress, skipCityValidation);
                 console.log('💰 Real price calculation result:', result);
                 this.showResults(result);
             } catch (apiError) {
                 console.warn('⚠️ Real API failed, using estimated pricing:', apiError.message);
-                const result = await this.calculateEstimatedPrice(pickupAddress, deliveryAddress, cachedCoords);
+                const result = await this.calculateEstimatedPrice(pickupAddress, deliveryAddress, cachedCoords, skipCityValidation);
                 console.log('💰 Estimated price calculation result:', result);
                 this.showResults(result);
             }
@@ -42,13 +42,13 @@ export class PriceCalculator {
     }
 
     // Calculate real price using Google Maps API
-    async calculateRealPrice(pickupAddress, deliveryAddress) {
-        // Validate cities first
-        this.pricingService.validateCitySupport(pickupAddress, deliveryAddress);
+    async calculateRealPrice(pickupAddress, deliveryAddress, skipCityValidation = false) {
+        // Validate cities first (unless skipped for partial addresses)
+        this.pricingService.validateCitySupport(pickupAddress, deliveryAddress, skipCityValidation);
 
         // Get distance from Google Maps
         const routeData = await this.googleMapsService.calculateDistance(pickupAddress, deliveryAddress);
-        
+
         // Validate distance limit
         this.pricingService.validateDistance(routeData.distance);
 
@@ -67,9 +67,9 @@ export class PriceCalculator {
     }
 
     // Calculate estimated price when Google Maps API is unavailable
-    async calculateEstimatedPrice(pickupAddress, deliveryAddress, cachedCoords = null) {
-        // Validate cities first
-        this.pricingService.validateCitySupport(pickupAddress, deliveryAddress);
+    async calculateEstimatedPrice(pickupAddress, deliveryAddress, cachedCoords = null, skipCityValidation = false) {
+        // Validate cities first (unless skipped for partial addresses)
+        this.pricingService.validateCitySupport(pickupAddress, deliveryAddress, skipCityValidation);
 
         // Use estimated distance based on city centers (rough approximation)
         const estimatedDistance = this.estimateDistanceBetweenAddresses(pickupAddress, deliveryAddress);
