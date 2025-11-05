@@ -22,6 +22,7 @@ export class ChatUI {
     initElements() {
         this.widget = document.getElementById('chat-widget');
         this.toggleBtn = document.getElementById('chat-toggle');
+        this.heroBtn = document.getElementById('chat-hero-open'); // New hero button
         this.modal = document.getElementById('chat-modal');
         this.closeBtn = document.getElementById('chat-close');
         this.messagesContainer = document.getElementById('chat-messages');
@@ -51,6 +52,10 @@ export class ChatUI {
      */
     bindEvents() {
         this.toggleBtn.addEventListener('click', () => this.toggleChat());
+        // Bind hero button if it exists
+        if (this.heroBtn) {
+            this.heroBtn.addEventListener('click', () => this.openChat());
+        }
         this.closeBtn.addEventListener('click', () => this.closeChat());
         this.sendBtn.addEventListener('click', () => this.sendMessage());
         this.input.addEventListener('keypress', (e) => {

@@ -468,8 +468,8 @@ export class ChatAgent {
      */
     getGreeting() {
         const greetings = {
-            pl: 'Cześć! 👋 Jestem asystentem Xpress.Delivery. Pomogę Ci zamówić kuriera. Podaj adres odbioru paczki.',
-            en: 'Hello! 👋 I\'m Xpress.Delivery assistant. I\'ll help you order a courier. Please provide the pickup address.'
+            pl: 'Cześć! Jak dobrze się dziś masz? 😊\n\nJestem Twoim asystentem i pomogę Ci zamówić kuriera ekspresowego. Po prostu napisz, co i gdzie chcesz przewieźć – wypełnię wszystko za Ciebie. Xpressowo! ⚡',
+            en: 'Hello! How are you doing today? 😊\n\nI\'m your assistant and I\'ll help you order an express courier. Just tell me what and where you want to send – I\'ll fill everything for you. Xpressly! ⚡'
         };
         return greetings[this.language];
     }
