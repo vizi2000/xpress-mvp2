@@ -26,11 +26,13 @@ Zbierz informacje krok po kroku:
 1. Adres odbioru (pełny adres z miastem, np. ul. Krakowska 123, Warszawa)
 2. Adres dostawy (pełny adres z miastem)
 3. Rozmiar paczki (mała/średnia/duża)
-4. Dane kontaktowe (imię, email, telefon)
+4. Dane NADAWCY (imię i nazwisko, email, telefon)
+5. Dane ODBIORCY (imię i nazwisko, email, telefon)
 
 Zasady:
 - Bądź przyjazny, zwięzły i pomocny
 - Zadawaj jedno pytanie na raz
+- ZAWSZE pytaj osobno o dane nadawcy i odbiorcy - to są dwie różne osoby
 - Potwierdź zebrane dane przed przejściem dalej
 - Używaj emotikonów dla lepszej atmosfery
 - Jeśli klient poda niekompletny adres, dopytaj o szczegóły`,
@@ -41,11 +43,13 @@ Collect information step by step:
 1. Pickup address (full address with city, e.g. ul. Krakowska 123, Warsaw)
 2. Delivery address (full address with city)
 3. Package size (small/medium/large)
-4. Contact details (name, email, phone)
+4. SENDER details (full name, email, phone)
+5. RECIPIENT details (full name, email, phone)
 
 Rules:
 - Be friendly, concise and helpful
 - Ask one question at a time
+- ALWAYS ask separately for sender and recipient data - they are two different people
 - Confirm collected data before proceeding
 - Use emojis for better atmosphere
 - If customer provides incomplete address, ask for details`
@@ -61,9 +65,12 @@ export class ChatAgent {
             pickupAddress: null,
             deliveryAddress: null,
             packageSize: null,
-            contactName: null,
-            contactEmail: null,
-            contactPhone: null
+            senderName: null,
+            senderEmail: null,
+            senderPhone: null,
+            recipientName: null,
+            recipientEmail: null,
+            recipientPhone: null
         };
 
         this.loadHistory();
@@ -129,9 +136,12 @@ export class ChatAgent {
             pickupAddress: null,
             deliveryAddress: null,
             packageSize: null,
-            contactName: null,
-            contactEmail: null,
-            contactPhone: null
+            senderName: null,
+            senderEmail: null,
+            senderPhone: null,
+            recipientName: null,
+            recipientEmail: null,
+            recipientPhone: null
         };
         localStorage.removeItem('xpress_chat_history');
         console.log('🗑️ Chat history cleared');
@@ -186,9 +196,12 @@ export class ChatAgent {
                 pickup: this.orderData.pickupAddress,
                 delivery: this.orderData.deliveryAddress,
                 packageSize: this.orderData.packageSize,
-                contactName: this.orderData.contactName,
-                contactEmail: this.orderData.contactEmail,
-                contactPhone: this.orderData.contactPhone
+                senderName: this.orderData.senderName,
+                senderEmail: this.orderData.senderEmail,
+                senderPhone: this.orderData.senderPhone,
+                recipientName: this.orderData.recipientName,
+                recipientEmail: this.orderData.recipientEmail,
+                recipientPhone: this.orderData.recipientPhone
             };
 
             console.log('📤 CHAT AGENT RETURN:', {
@@ -238,23 +251,41 @@ export class ChatAgent {
         // Extract email
         const email = this.extractEmail(text);
         if (email) {
-            this.orderData.contactEmail = email;
-            console.log('📧 Extracted email:', email);
+            // If sender data is incomplete, fill sender fields first
+            if (!this.orderData.senderEmail) {
+                this.orderData.senderEmail = email;
+                console.log('📧 Extracted sender email:', email);
+            } else if (!this.orderData.recipientEmail) {
+                this.orderData.recipientEmail = email;
+                console.log('📧 Extracted recipient email:', email);
+            }
         }
 
         // Extract phone
         const phone = this.extractPhone(text);
         if (phone) {
-            this.orderData.contactPhone = phone;
-            console.log('📱 Extracted phone:', phone);
+            // If sender data is incomplete, fill sender fields first
+            if (!this.orderData.senderPhone) {
+                this.orderData.senderPhone = phone;
+                console.log('📱 Extracted sender phone:', phone);
+            } else if (!this.orderData.recipientPhone) {
+                this.orderData.recipientPhone = phone;
+                console.log('📱 Extracted recipient phone:', phone);
+            }
         }
 
         // Extract name (simple heuristic - first capitalized word)
-        if (!this.orderData.contactName && /\b[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+\b/.test(text)) {
-            const match = text.match(/\b([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)\b/);
+        if (/\b[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+\b/.test(text)) {
+            const match = text.match(/\b([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:\s+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*)\b/);
             if (match) {
-                this.orderData.contactName = match[1];
-                console.log('👤 Extracted name:', this.orderData.contactName);
+                // If sender data is incomplete, fill sender fields first
+                if (!this.orderData.senderName) {
+                    this.orderData.senderName = match[1];
+                    console.log('👤 Extracted sender name:', this.orderData.senderName);
+                } else if (!this.orderData.recipientName) {
+                    this.orderData.recipientName = match[1];
+                    console.log('👤 Extracted recipient name:', this.orderData.recipientName);
+                }
             }
         }
     }
@@ -381,7 +412,10 @@ export class ChatAgent {
                 break;
 
             case ChatState.COLLECTING_CONTACT:
-                if (this.orderData.contactEmail && this.orderData.contactPhone) {
+                // Check if both sender and recipient data is complete
+                const senderComplete = this.orderData.senderEmail && this.orderData.senderPhone && this.orderData.senderName;
+                const recipientComplete = this.orderData.recipientEmail && this.orderData.recipientPhone && this.orderData.recipientName;
+                if (senderComplete && recipientComplete) {
                     this.state = ChatState.CONFIRMING;
                 }
                 break;
@@ -433,8 +467,12 @@ export class ChatAgent {
             this.orderData.pickupAddress &&
             this.orderData.deliveryAddress &&
             this.orderData.packageSize &&
-            this.orderData.contactEmail &&
-            this.orderData.contactPhone
+            this.orderData.senderName &&
+            this.orderData.senderEmail &&
+            this.orderData.senderPhone &&
+            this.orderData.recipientName &&
+            this.orderData.recipientEmail &&
+            this.orderData.recipientPhone
         );
     }
 

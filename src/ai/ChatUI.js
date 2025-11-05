@@ -222,15 +222,39 @@ export class ChatUI {
     /**
      * Fill form from chat order state
      */
-    fillFormFromOrderState(orderState) {
+    async fillFormFromOrderState(orderState) {
         console.log('Chat → Form: Filling addresses with animation');
         console.log('Pickup address:', orderState.pickup);
         console.log('Delivery address:', orderState.delivery);
 
+        // Geocode addresses to get coordinates for map display
+        let pickupCoords = null;
+        let deliveryCoords = null;
+
+        if (orderState.pickup && orderState.delivery && window.xpressApp && window.xpressApp.googleMapsService) {
+            try {
+                console.log('🗺️ Geocoding addresses for map...');
+
+                // Geocode pickup address
+                pickupCoords = await window.xpressApp.googleMapsService.geocodeAddress(orderState.pickup);
+                console.log('✅ Pickup coords:', pickupCoords);
+
+                // Geocode delivery address
+                deliveryCoords = await window.xpressApp.googleMapsService.geocodeAddress(orderState.delivery);
+                console.log('✅ Delivery coords:', deliveryCoords);
+
+            } catch (error) {
+                console.error('❌ Geocoding failed:', error);
+                // Continue without coordinates - form will still work, just no map
+            }
+        }
+
         if (window.xpressApp && window.xpressApp.fillAddressesFromChat) {
             window.xpressApp.fillAddressesFromChat(
                 orderState.pickup,
-                orderState.delivery
+                orderState.delivery,
+                pickupCoords,
+                deliveryCoords
             );
         }
 
@@ -239,6 +263,55 @@ export class ChatUI {
             console.log('Chat → Form: Selecting package', orderState.packageSize);
             if (window.xpressApp && window.xpressApp.selectPackageFromChat) {
                 window.xpressApp.selectPackageFromChat(orderState.packageSize);
+            }
+        }
+
+        // Fill contact form fields
+        console.log('Chat → Form: Filling contact information');
+
+        // Sender information
+        if (orderState.senderName) {
+            const senderNameField = document.getElementById('senderName');
+            if (senderNameField) {
+                senderNameField.value = orderState.senderName;
+                console.log('Filled sender name:', orderState.senderName);
+            }
+        }
+        if (orderState.senderEmail) {
+            const senderEmailField = document.getElementById('senderEmail');
+            if (senderEmailField) {
+                senderEmailField.value = orderState.senderEmail;
+                console.log('Filled sender email:', orderState.senderEmail);
+            }
+        }
+        if (orderState.senderPhone) {
+            const senderPhoneField = document.getElementById('senderPhone');
+            if (senderPhoneField) {
+                senderPhoneField.value = orderState.senderPhone;
+                console.log('Filled sender phone:', orderState.senderPhone);
+            }
+        }
+
+        // Recipient information
+        if (orderState.recipientName) {
+            const recipientNameField = document.getElementById('recipientName');
+            if (recipientNameField) {
+                recipientNameField.value = orderState.recipientName;
+                console.log('Filled recipient name:', orderState.recipientName);
+            }
+        }
+        if (orderState.recipientEmail) {
+            const recipientEmailField = document.getElementById('recipientEmail');
+            if (recipientEmailField) {
+                recipientEmailField.value = orderState.recipientEmail;
+                console.log('Filled recipient email:', orderState.recipientEmail);
+            }
+        }
+        if (orderState.recipientPhone) {
+            const recipientPhoneField = document.getElementById('recipientPhone');
+            if (recipientPhoneField) {
+                recipientPhoneField.value = orderState.recipientPhone;
+                console.log('Filled recipient phone:', orderState.recipientPhone);
             }
         }
 
@@ -279,13 +352,22 @@ export class ChatUI {
                             <strong>${this.getPackageSizeLabel(orderState.packageSize)}</strong>
                         </div>
                         <div class="detail-row">
-                            <span>Kontakt:</span>
-                            <strong>${orderState.contactName || orderState.contactEmail}</strong>
+                            <span>Nadawca:</span>
+                            <strong>${orderState.senderName || orderState.senderEmail || 'Nie podano'}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Odbiorca:</span>
+                            <strong>${orderState.recipientName || orderState.recipientEmail || 'Nie podano'}</strong>
                         </div>
                     </div>
-                    <button class="chat-payment-btn" id="chat-payment-btn">
-                        Przejdź do płatności
-                    </button>
+                    <div class="payment-actions">
+                        <button class="chat-payment-btn" id="chat-payment-btn">
+                            Przejdź do płatności
+                        </button>
+                        <button class="chat-new-order-btn" id="chat-new-order-btn">
+                            Nowe zamówienie
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -298,6 +380,14 @@ export class ChatUI {
         if (paymentBtn) {
             paymentBtn.addEventListener('click', () => {
                 this.handlePaymentClick(orderState);
+            });
+        }
+
+        // Bind new order button
+        const newOrderBtn = document.getElementById('chat-new-order-btn');
+        if (newOrderBtn) {
+            newOrderBtn.addEventListener('click', () => {
+                this.handleNewOrderClick();
             });
         }
     }
@@ -322,6 +412,27 @@ export class ChatUI {
                 orderFormSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }, 300);
+    }
+
+    /**
+     * Handle new order button click
+     */
+    handleNewOrderClick() {
+        console.log('New order button clicked - starting new order');
+
+        // Call startNewOrder on XpressApp if available
+        if (window.xpressApp && window.xpressApp.startNewOrder) {
+            window.xpressApp.startNewOrder();
+        }
+
+        // Clear chat messages
+        this.messagesContainer.innerHTML = '';
+
+        // Show greeting again
+        this.showGreeting();
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     /**

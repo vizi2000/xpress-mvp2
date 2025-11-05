@@ -386,6 +386,11 @@ export class XpressApp {
             this.routeMap.clearRoute();
         }
 
+        // Reset chat history for new order
+        if (this.chatAgent) {
+            this.chatAgent.reset();
+        }
+
         // Show main page
         UIHelpers.toggleClass('thank-you-page', 'active', false);
         UIHelpers.toggleClass('main-page', 'active', true);
@@ -450,8 +455,10 @@ export class XpressApp {
      * Fill address fields from chat and trigger calculation
      * @param {string} pickup - Pickup address
      * @param {string} delivery - Delivery address
+     * @param {object} pickupCoords - Pickup coordinates {lat, lng}
+     * @param {object} deliveryCoords - Delivery coordinates {lat, lng}
      */
-    fillAddressesFromChat(pickup, delivery) {
+    fillAddressesFromChat(pickup, delivery, pickupCoords = null, deliveryCoords = null) {
         console.log('🎯 FILL ADDRESSES CALLED:', { pickup, delivery });
 
         const pickupInput = document.getElementById('pickup-address');
@@ -484,11 +491,32 @@ export class XpressApp {
             }, 2000);
         }
 
+        // Store coordinates in orderData if provided
+        if (pickupCoords) {
+            this.orderData.pickupCoords = pickupCoords;
+            console.log('✅ Stored pickup coordinates:', pickupCoords);
+        }
+        if (deliveryCoords) {
+            this.orderData.deliveryCoords = deliveryCoords;
+            console.log('✅ Stored delivery coordinates:', deliveryCoords);
+        }
+
         // Trigger address change to calculate route
         // Skip city validation since chat may provide partial addresses (without city name)
         if (pickup && delivery) {
             console.log('🎯 Triggering handleAddressChange...');
             this.handleAddressChange(pickup, delivery, true); // Skip city validation for chat addresses
+
+            // If we have coordinates, draw the route immediately
+            if (pickupCoords && deliveryCoords && this.routeMap) {
+                console.log('🗺️ Drawing route with coordinates from chat...');
+                this.routeMap.drawRoute(pickupCoords, deliveryCoords).then(() => {
+                    this.routeMap.show();
+                    console.log('✅ Map displayed with route');
+                }).catch(err => {
+                    console.error('❌ Failed to draw route:', err);
+                });
+            }
 
             // Scroll to results after a brief delay
             setTimeout(() => {
